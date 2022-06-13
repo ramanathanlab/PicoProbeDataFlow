@@ -17,7 +17,7 @@ pip3 install -e .
 
 Conda Locally: 
 ```
-conda create -p ./conda-env python=3.9 
+conda create -p ./conda-env python=3.9
 conda activate ./conda-env
 pip install -U pip setuptools wheel
 pip install -r requirements/dev.txt
