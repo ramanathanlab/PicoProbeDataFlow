@@ -112,7 +112,7 @@ class TransferOut(ApplicationDefinition):
 
         tar_file = transfer_task_dir / "payload.tar"
         p = subprocess.run(f"tar -cf {tar_file} -C {job_dir} {file_string}", shell=True)
-        logger.debug(f"Tarred files for transfer to {destination} using:  {p.args}")
+        logger.debug(f"Tarred files for transfer to {destination} using: {p.args}")
 
         job = TransferOut.submit(
             workdir=transfer_task_dir.relative_to(site_data_path),
