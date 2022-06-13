@@ -1,3 +1,4 @@
+"""Data transfer utilities."""
 import logging
 import shutil
 import subprocess
@@ -12,20 +13,32 @@ from balsam.config import SiteConfig
 from balsam.schemas import JobState
 from pydantic import BaseModel, validator
 
-
 PathLike = Union[str, Path]
 
 logger = logging.getLogger(__name__)
 
-
+# TODO: Give a reasonable default for expiration_time
 def run_untar_loop(
     input_directory: Path,
     untar_interval: float,
     expiration_time: float,
     max_concurrent_untars: int = 10,
 ) -> None:
-    """
-    Periodically untar incoming archives and clean up old .tar archives.
+    """Periodically untar incoming archives and clean up old .tar archives.
+
+    Parameters
+    ----------
+    input_directory : Path
+        _description_
+    untar_interval : float
+        Number of seconds between untarring of archives.
+    expiration_time : float
+        Number of seconds after which a transferred archive can be removed.
+    max_concurrent_untars : int, optional
+        Number of concurrent untarring workers, by default 10
+
+    Note
+    ----
     MUST NOT delete .tar immediately; because Globus will think it failed and
     retry transfer tasks forever (race condition).
     """
@@ -62,18 +75,37 @@ def run_untar_loop(
 
 
 class TransferDaemonConfig(BaseModel):
+    """Configuration for a data transfer daemon."""
+
     poll_time: float = 10.0
+    """Number of seconds between polling for new files to transfer."""
     patterns: List[str]
+    """List of glob patterns to match files to transfer."""
     # TODO: destination should be type Union[str, Path], the
     #       str representation has a colon and is not PathLike.
     destination: PathLike
+    """Where to transfer files to. Must be either Balsam LOC:PATH string or a local Path."""
 
     @validator("destination")
     def destination_local_or_remote(cls, v: PathLike) -> PathLike:
+        """Validate whether `destination` is local or remote.
+
+        Parameters
+        ----------
+        v : PathLike
+            The transfer destination.
+
+        Returns
+        -------
+        PathLike
+            Returns a str if the destination is remote, otherwise a path.
+        """
         return str(v) if ":" in str(v) else Path(v)
 
 
 class TransferOut(ApplicationDefinition):
+    """Application to transfer a single tar file to a remote location using Globus."""
+
     site = 0
     command_template = "echo no-op"
     cleanup_files = ["payload-*.tar"]
@@ -87,16 +119,29 @@ class TransferOut(ApplicationDefinition):
     }
 
     def preprocess(self) -> None:
+        """Immediately set job state to postprocessed to use Balsam's Globus transfer feature."""
         self.job.state = JobState.postprocessed
 
     @staticmethod
     def submit_remote_transfer(
         files: Iterable[Path], staging_dir: Path, destination: str, experiment_name: str
     ) -> Job:
-        """
+        """Submit a remote transfer job.
+
         Stage `files` from persistent storage to `staging_dir`, then submit a
         TransferOut job to asynchronously manage the (Globus) stage-out to
         `destination`.
+
+        Parameters
+        ----------
+        files : Iterable[Path]
+            Files to transfer.
+        staging_dir : Path
+            Directory to stage tar transfer file to.
+        destination : str
+            Globus transfer destination of the form LOC:PATH.
+        experiment_name : str
+            Experiment name to tag transfer jobs with.
         """
         transfer_id = str(uuid4())
         site_data_path = SiteConfig().data_path
@@ -123,7 +168,7 @@ class TransferOut(ApplicationDefinition):
         return job
 
 
-def file_transfer_daemon(
+def _file_transfer_daemon(
     job_persistent_dir: Path,
     transfer_staging_dir: Path,
     transfer_poll_time: float,
@@ -133,12 +178,37 @@ def file_transfer_daemon(
     experiment_name: str,
     exit_flag: Event,  # type: ignore[valid-type]
 ) -> None:
-    """
+    """Run a daemon that periodically checks for new files to transfer.
+
     If `destination` is a Path, daemon will synchronously copy new files
     matching the `transfer_patterns` from `job_persistent_dir` to `destination`.
     If `destination` is a Balsam transfer string of the form
     "location_alias:path", the daemon will instead submit async transfer Jobs to
-    Balsam.  The number of these is not bounded.
+    Balsam. The number of these is not bounded.
+
+    Parameters
+    ----------
+    job_persistent_dir : Path
+        Persistent directory for job output files.
+    transfer_staging_dir : Path
+        Directory to stage files for transfer.
+    transfer_poll_time : float
+        Number of seconds between polling for new files to transfer.
+    transfer_patterns : List[str]
+        File pattern to glob for new files to transfer in `job_persistent_dir`.
+    destination : Union[str, Path]
+        Where to transfer files to. Must be either Balsam LOC:PATH string or a local Path.
+    site_id : int
+        Balsam site ID to use for transfers.
+    experiment_name : str
+        Experiment name to tag transfer jobs with.
+    exit_flag : Event
+        Signals when to stop the daemon.
+
+    Raises
+    ------
+    ValueError
+        If `destination` is invalid
     """
     seen_files: Set[Path] = set()
     TransferOut.site = site_id
@@ -157,6 +227,9 @@ def file_transfer_daemon(
         }
         to_transfer = all_files - seen_files
         seen_files.update(to_transfer)
+        # If there are no new files, don't submit a new transfer job
+        if not to_transfer:
+            continue
 
         # Transfer with Balsam Transfer
         if isinstance(destination, str) and ":" in destination:
@@ -183,31 +256,160 @@ def file_transfer_daemon(
             )
 
 
-def start_remote_transfers(
-    job_persistent_dir: Path,
-    transfer_staging_dir: Path,
-    transfer_cfgs: List[TransferDaemonConfig],
-    site_id: int,
-    experiment_name: str,
-    exit_flag: Event,  # type: ignore[valid-type]
-) -> List[Process]:
+# TODO: This should be an abstract class
+class ShutDownCallback:
+    """Abstract interface to define custom shutdown behavior."""
 
-    daemons = []
-    for cfg in transfer_cfgs:
-        proc = Process(
-            target=file_transfer_daemon,
-            daemon=True,
-            kwargs=dict(
-                job_persistent_dir=job_persistent_dir,
-                transfer_staging_dir=transfer_staging_dir,
-                transfer_poll_time=cfg.poll_time,
-                transfer_patterns=cfg.patterns,
-                destination=cfg.destination,
-                site_id=site_id,
-                experiment_name=experiment_name,
-                exit_flag=exit_flag,
-            ),
+    def check_shutdown(self) -> bool:
+        """Logic to determine if the transfer should shut down.
+
+        Returns
+        -------
+        bool
+            True if the transfer service should shutdown, otherwise False.
+
+        Raises
+        ------
+        NotImplementedError
+            If this method is not implemented.
+        """
+        raise NotImplementedError()
+
+
+# TOOD: Need to test if the balsam job object id is identical
+#       otherwise, may need to use the following function closure:
+#       def shutdown_callback() -> bool:
+#           # Closure on self.job, otherwise we would need to pass
+#           # self.job to the run_job function
+#           self.job.refresh_from_db()
+#           shutdown: bool = self.job.data["shutdown"]
+#           return shutdown
+
+
+class JobSignalShutDownCallback(ShutDownCallback):
+    """Custom shutdown callback that listens for a shutdown signal from the Balsam job."""
+
+    def __init__(self, job: Job) -> None:
+        """Initialize JobSignalShutDownCallback.
+
+        Parameters
+        ----------
+        job : Job
+            The balsam job object to monitor.
+        """
+        self.job = job
+
+    def check_shutdown(self) -> bool:
+        """Shutdown if the job metadata indicates that it should.
+
+        Returns
+        -------
+        bool
+            True if the job should be shutdown, False otherwise.
+        """
+        self.job.refresh_from_db()
+        shutdown: bool = self.job.data["shutdown"]
+        return shutdown
+
+
+class TransferService:
+    """Transfer service to manage transfers to remote and local locations."""
+
+    def __init__(
+        self,
+        job_persistent_dir: Path,
+        transfer_staging_dir: Path,
+        transfer_cfgs: List[TransferDaemonConfig],
+        site_id: int,
+        experiment_name: str,
+        callbacks: List[ShutDownCallback] = [],  # TODO: Use default factory list
+    ) -> None:
+        """Initialize a transfer service.
+
+        Parameters
+        ----------
+        job_persistent_dir : Path
+            Persistent directory for job output files.
+        transfer_staging_dir : Path
+            Directory to stage files for transfer.
+        transfer_cfgs : List[TransferDaemonConfig]
+            Configuration for transfer daemons.
+        site_id : int
+            Balsam site ID to use for transfers.
+        experiment_name : str
+            Experiment name to tag transfer jobs with.
+        callbacks : List[ShutDownCallback], optional
+            Optional list of callbacks to custumize shutdown behavior, by default []
+        """
+        self.exit_flag = Event()
+        # TODO: Is it possible to combine job_persistent_dir and transfer_staging_dir?
+        self.daemons = self._start_remote_transfers(
+            job_persistent_dir,
+            transfer_staging_dir,
+            transfer_cfgs,
+            site_id,
+            experiment_name,
         )
-        proc.start()
-        daemons.append(proc)
-    return daemons
+        self.callbacks = callbacks
+
+    def _start_remote_transfers(
+        self,
+        job_persistent_dir: Path,
+        transfer_staging_dir: Path,
+        transfer_cfgs: List[TransferDaemonConfig],
+        site_id: int,
+        experiment_name: str,
+    ) -> List[Process]:
+
+        daemons = []
+        for cfg in transfer_cfgs:
+            proc = Process(
+                target=_file_transfer_daemon,
+                daemon=True,
+                kwargs=dict(
+                    job_persistent_dir=job_persistent_dir,
+                    transfer_staging_dir=transfer_staging_dir,
+                    transfer_poll_time=cfg.poll_time,
+                    transfer_patterns=cfg.patterns,
+                    destination=cfg.destination,
+                    site_id=site_id,
+                    experiment_name=experiment_name,
+                    exit_flag=self.exit_flag,
+                ),
+            )
+            proc.start()
+            daemons.append(proc)
+        return daemons
+
+    def check_shutdown(self) -> bool:
+        """Check whether to shut down the transfer service.
+
+        Returns
+        -------
+        bool
+            Whether the service should shut down.
+        """
+        shutdown = False
+
+        # Check if any of the daemons have shutdown
+        daemon_died = any(not d.is_alive() for d in self.daemons)
+        if daemon_died:
+            logger.error("A transfer daemon failed! Aborting job.")
+            shutdown = True
+
+        # Check if any other callbacks want to shutdown
+        callback_shutdown = any(c.check_shutdown() for c in self.callbacks)
+        if callback_shutdown:
+            logger.info("A callback requested a shutdown of the transfer service.")
+            shutdown = True
+
+        return shutdown
+
+    def shutdown(self) -> None:
+        """Shutdown the data transfer service."""
+        # Give the signal for transfer daemons to exit
+        self.exit_flag.set()
+        logger.info("Shutting down transfer daemons...")
+        for daemon in self.daemons:
+            daemon.join()
+        logger.info("Transfer daemons shut down.")

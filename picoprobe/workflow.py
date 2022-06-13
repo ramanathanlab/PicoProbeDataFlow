@@ -1,28 +1,33 @@
-import logging
-import os
-import time
+"""Data transfer application."""
 import itertools
-from pydantic import BaseModel
-from multiprocessing import Event
+import logging
+import time
 from pathlib import Path
-from typing import Any, Dict, List, Callable
+from typing import Any, Dict, List
 
 from balsam.api import ApplicationDefinition
 from balsam.config import ClientSettings
+from pydantic import BaseModel
 
-from transfers import start_remote_transfers, TransferDaemonConfig
+from picoprobe.transfers import (
+    JobSignalShutDownCallback,
+    TransferDaemonConfig,
+    TransferService,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class RunConfig(BaseModel):
-    executable: str
+class DataTransferConfig(BaseModel):
+    """Configuration for DataTransferApplication."""
+
     root_scratch_dir: Path
+    """The root scratch directory path."""
+    transfer_daemons: List[TransferDaemonConfig] = []  # TODO: use list factory
+    """List of TransferDaemonConfig's to specify destinations."""
 
-    transfer_daemons: List[TransferDaemonConfig] = []
 
-
-def run_job(shutdown_callback: Callable[[], bool]) -> int:
+def run_job(transfer_service: TransferService) -> int:
     """Run a dummy job which sleeps.
 
     Parameters
@@ -37,23 +42,37 @@ def run_job(shutdown_callback: Callable[[], bool]) -> int:
         return code
     """
     for itr in itertools.count(0):
-        logger.info("Check shutdown_callback")
-        shutdown_ret = shutdown_callback()
+        logger.info("Check whether to shutdown")
+        shutdown_ret = transfer_service.check_shutdown()
         logger.info(f"shutdown_callback ret: {shutdown_ret}")
         if shutdown_ret:
             # Trigger a shutdown event
+            transfer_service.shutdown()
             return 0
         logger.info(f"Running iteration {itr}")
         time.sleep(10)
     return 1  # Should never get here
 
 
-class RunDataTransfer(ApplicationDefinition):
+class DataTransferApplication(ApplicationDefinition):
+    """Data transfer application."""
 
     site = "0"  # This attribute must be overritten in the child class
 
     def run(self, cfg_dict: Dict[str, Any]) -> None:  # type: ignore[override]
-        cfg = RunConfig(**cfg_dict)
+        """Run the data transfer application.
+
+        Parameters
+        ----------
+        cfg_dict : Dict[str, Any]
+            Configuration dictionary for RunConfig object.
+
+        Raises
+        ------
+        RuntimeError
+            If job fails.
+        """
+        cfg = DataTransferConfig(**cfg_dict)
         client = ClientSettings.load_from_file().build_client()
         Site = client.Site
         site = Site.objects.get(id=self.resolve_site_id())
@@ -69,49 +88,22 @@ class RunDataTransfer(ApplicationDefinition):
         transfer_staging_dir.mkdir(parents=True, exist_ok=True)
 
         # /node-local-SSD/scratch/experimentName/jobID
-        if str(cfg.root_scratch_dir).startswith("$"):
-            cfg.root_scratch_dir = Path(
-                os.environ.get(
-                    str(cfg.root_scratch_dir).lstrip("$"),
-                    "/tmp",
-                )
-            )
-            logger.info(
-                f"Resolved root_scratch dir from environment: {cfg.root_scratch_dir}"
-            )
-
         job_scratch_dir = cfg.root_scratch_dir / str(self.job.workdir)
         job_scratch_dir.mkdir(parents=True, exist_ok=True)
 
-        exit_flag = Event()
-        daemons = start_remote_transfers(
+        # TODO: Test if the JobSignalShutDownCallback is necessary for this application
+        transfer_service = TransferService(
             job_persistent_dir,
             transfer_staging_dir,
             cfg.transfer_daemons,
             self.resolve_site_id(),
             self.job.tags.get("experiment", "no-experiment"),
-            exit_flag,
+            callbacks=[JobSignalShutDownCallback(self.job)],
         )
 
-        def shutdown_callback() -> bool:
-            # Closure on self.job, otherwise we would need to pass
-            # self.job to the run_job function
-            self.job.refresh_from_db()
-            shutdown: bool = self.job.data["shutdown"]
-            daemon_died = any(not d.is_alive() for d in daemons)
-            if daemon_died:
-                logger.error("A daemon failed! Aborting job with shutdown=True signal.")
-                shutdown = True
-            return shutdown
-
-        return_code = run_job(shutdown_callback=shutdown_callback)
+        return_code = run_job(transfer_service=transfer_service)
 
         if return_code != 0:
             raise RuntimeError(
                 f"Error in job, please check output in: {job_persistent_dir}"
             )
-
-        # Give the signal for transfer daemons to exit
-        exit_flag.set()
-        for daemon in daemons:
-            daemon.join()
