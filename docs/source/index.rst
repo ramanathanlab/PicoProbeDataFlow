@@ -6,10 +6,15 @@
 Welcome to picoprobe's documentation!
 =====================================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+:github_url: https://github.com/ramanathanlab/PicoProbeDataFlow
 
+:Release: |release|
+:Date: |today|
+
+Data pipeline infrastructure for ANL PicoProbe project.
+
+.. toctree::
+   pages/api
 
 
 Indices and tables
