@@ -23,8 +23,11 @@ picoprobe.transfers
 
    .. autosummary::
    
+      GlobusTransferMethod
       JobSignalShutDownCallback
+      LocalCopyTransferMethod
       ShutDownCallback
+      TransferMethod
       TransferOut
       TransferService
    

@@ -11,7 +11,7 @@ format:
 lint:
 	$(black) --check --diff
 	flake8 picoprobe/ examples/ test/
-	#pylint picoprobe/ #examples/ test/
+	pylint picoprobe/ #examples/ test/
 	pydocstyle picoprobe/
 
 

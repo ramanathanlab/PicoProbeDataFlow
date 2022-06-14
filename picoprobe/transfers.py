@@ -75,16 +75,14 @@ def run_untar_loop(
             tar_file_ages.pop(f)
 
 
-class TransferDaemonConfig(BaseModel):
+class TransferConfig(BaseModel):
     """Configuration for a data transfer daemon."""
 
     poll_time: float = 10.0
     """Number of seconds between polling for new files to transfer."""
     patterns: List[str]
     """List of glob patterns to match files to transfer."""
-    # TODO: destination should be type Union[str, Path], the
-    #       str representation has a colon and is not PathLike.
-    destination: PathLike
+    destination: Union[str, Path]
     """Where to transfer files to. Must be either Balsam LOC:PATH string or a local Path."""
 
     @validator("destination")
@@ -157,7 +155,9 @@ class TransferOut(ApplicationDefinition):
         file_string = " ".join(p.relative_to(job_dir).as_posix() for p in files)
 
         tar_file = transfer_task_dir / "payload.tar"
-        p = subprocess.run(f"tar -cf {tar_file} -C {job_dir} {file_string}", shell=True)
+        p = subprocess.run(
+            f"tar -cf {tar_file} -C {job_dir} {file_string}", shell=True, check=True
+        )
         logger.debug(f"Tarred files for transfer to {destination} using: {p.args}")
 
         job = TransferOut.submit(
@@ -169,22 +169,24 @@ class TransferOut(ApplicationDefinition):
         return job
 
 
-class FileManager:
-    """Manage files to be transferred."""
+class TransferMethod(ABC):
+    """Base class for transfer methods."""
 
-    def __init__(self, directory: Path, patterns: List[str]) -> None:
-        """Initialize a FileManager to gather files from `directory` matching glob `patterns`.
+    def __init__(self, transfer_config: TransferConfig, directory: Path) -> None:
+        """Initialize a TransferMethod.
 
         Parameters
         ----------
+        transfer_config : TransferConfig
+            Configuration for the transfer method.
         directory : Path
-            Directory to gather files from.
-        patterns : List[str]
-            List of glob patterns to match files.
+            Directory to monitor and transfer files from.
         """
+        self.patterns = transfer_config.patterns
+        self.destination = transfer_config.destination
+        self.poll_time = transfer_config.poll_time
         self.directory = directory
-        self.patterns = patterns
-        self.seen_files: Set[Path] = set()
+        self._seen_files: Set[Path] = set()
 
     def gather_unseen_files(self) -> Set[Path]:
         """Gather all files in `directory` that have not been seen before.
@@ -197,94 +199,115 @@ class FileManager:
         all_files = {
             file for pattern in self.patterns for file in self.directory.glob(pattern)
         }
-        unseen_files = all_files - self.seen_files
-        self.seen_files.update(unseen_files)
+        unseen_files = all_files - self._seen_files
+        self._seen_files.update(unseen_files)
         return unseen_files
 
+    def run(self, exit_flag: Event) -> None:  # type: ignore[valid-type]
+        """Run a daemon that periodically checks for new files to transfer.
 
-def _file_transfer_daemon(
-    job_persistent_dir: Path,
-    transfer_staging_dir: Path,
-    transfer_poll_time: float,
-    transfer_patterns: List[str],
-    destination: Union[str, Path],
-    site_id: int,
-    experiment_name: str,
-    exit_flag: Event,  # type: ignore[valid-type]
-) -> None:
-    """Run a daemon that periodically checks for new files to transfer.
+        Parameters
+        ----------
+        exit_flag : Event
+            Signals when to stop the daemon.
+        """
+        # Setup the transfer method
+        self.pre_execute()
 
-    If `destination` is a Path, daemon will synchronously copy new files
-    matching the `transfer_patterns` from `job_persistent_dir` to `destination`.
-    If `destination` is a Balsam transfer string of the form
-    "location_alias:path", the daemon will instead submit async transfer Jobs to
-    Balsam. The number of these is not bounded.
+        # Loop until shutdown signal is set
+        while not exit_flag.is_set():  # type: ignore[attr-defined]
+            time.sleep(self.poll_time)
+            self.transfer()
 
-    Parameters
-    ----------
-    job_persistent_dir : Path
-        Persistent directory for job output files.
-    transfer_staging_dir : Path
-        Directory to stage files for transfer.
-    transfer_poll_time : float
-        Number of seconds between polling for new files to transfer.
-    transfer_patterns : List[str]
-        File pattern to glob for new files to transfer in `job_persistent_dir`.
-    destination : Union[str, Path]
-        Where to transfer files to. Must be either Balsam LOC:PATH string or a local Path.
-    site_id : int
-        Balsam site ID to use for transfers.
-    experiment_name : str
-        Experiment name to tag transfer jobs with.
-    exit_flag : Event
-        Signals when to stop the daemon.
+        # Transfer any extra files that appeared since the shutdown signal was set
+        self.transfer()
 
-    Raises
-    ------
-    ValueError
-        If `destination` is invalid
-    """
-    # Set the current daemon process TransferOut site
-    TransferOut.site = site_id
+    @abstractmethod
+    def pre_execute(self) -> None:
+        """Perform any pre-execution tasks in the process pool."""
 
-    # Create a FileManager to collect files to transfer
-    file_manager = FileManager(job_persistent_dir, transfer_patterns)
+    @abstractmethod
+    def transfer(self) -> None:
+        """Transfer files to the destination."""
 
-    # TODO: There is a small non-critical race condition where a new file
-    #       matching pattern may be added to the persistent directory
-    #       during the main transfer loop below, and then is not transfered
-    #       if the exit_flag has been set (this would likely only happen)
-    #       for the last output files of the simulation.
-    while not exit_flag.is_set():  # type: ignore[attr-defined]
-        time.sleep(transfer_poll_time)
-        to_transfer = file_manager.gather_unseen_files()
-        # If there are no new files, don't submit a new transfer job
-        if not to_transfer:
-            continue
 
-        # Transfer with Balsam Transfer
-        if isinstance(destination, str) and ":" in destination:
-            if to_transfer:
-                logger.debug(
-                    f"Submit TransferOut Job: stage {len(to_transfer)} files in {transfer_staging_dir} for shipment out to {destination}"
-                )
-                TransferOut.submit_remote_transfer(
-                    to_transfer,
-                    transfer_staging_dir,
-                    destination,
-                    experiment_name,
-                )
+class GlobusTransferMethod(TransferMethod):
+    """Method for transfering files across sites."""
 
-        # Transfer to local filesystem
-        elif isinstance(destination, Path):
-            for src in to_transfer:
-                logger.debug(f"shutil.copy {src.name} to {destination}")
-                shutil.copy(src, destination)
+    def __init__(
+        self,
+        transfer_config: TransferConfig,
+        directory: Path,
+        staging_dir: Path,
+        site_id: int,
+        experiment_name: str,
+    ) -> None:
+        """Initialize a GlobusTransferMethod.
 
-        else:
-            raise ValueError(
-                f"Invalid `destination`: {destination} ... Must be either Balsam LOC:PATH string or a local Path."
+        The transfer daemon will submit async transfer Jobs to Balsam.
+        The number of these is not bounded.
+
+        Parameters
+        ----------
+        transfer_config : TransferConfig
+            Configuration for the Globus transfer method.
+        directory : Path
+            Directory to monitor and transfer files from.
+        staging_dir : Path
+            Directory to stage files for transfer.
+        site_id : int
+            Balsam site ID to use for transfers.
+        experiment_name : str
+            Experiment name to tag transfer jobs with.
+        """
+        super().__init__(transfer_config, directory)
+        self.staging_dir = staging_dir
+        self.site_id = site_id
+        self.experiment_name = experiment_name
+
+    def pre_execute(self) -> None:
+        """Set the current daemon process TransferOut site."""
+        # TODO: See if this can be done once before the pool is started
+        TransferOut.site = self.site_id
+
+    def transfer(self) -> None:
+        """Transfer files to a remote destination using Balsam/Globus."""
+        assert isinstance(self.destination, str)
+        files = self.gather_unseen_files()
+        if files:
+            logger.info(
+                f"Submit TransferOut Job: stage {len(files)} files in "
+                f"{self.staging_dir} for shipment out to {self.destination}"
             )
+            TransferOut.submit_remote_transfer(
+                files, self.staging_dir, self.destination, self.experiment_name
+            )
+
+
+class LocalCopyTransferMethod(TransferMethod):
+    """Method for transfering files to a local directory."""
+
+    def __init__(self, transfer_config: TransferConfig, directory: Path) -> None:
+        """Initialize the local copy transfer method.
+
+        Parameters
+        ----------
+        transfer_config : TransferConfig
+            Configuration for the LocalCopy transfer method.
+        directory : Path
+            Directory to monitor and transfer files from.
+        """
+        super().__init__(transfer_config, directory)
+
+    def pre_execute(self) -> None:
+        """Do nothing."""
+
+    def transfer(self) -> None:
+        """Transfer files to a local directory."""
+        files = self.gather_unseen_files()
+        for src in files:
+            logger.debug(f"shutil.copy {src.name} to {self.destination}")
+            shutil.copy(src, self.destination)
 
 
 class ShutDownCallback(ABC):
@@ -299,7 +322,6 @@ class ShutDownCallback(ABC):
         bool
             True if the transfer service should shutdown, otherwise False.
         """
-        pass
 
 
 # TOOD: Need to test if the balsam job object id is identical
@@ -343,66 +365,30 @@ class TransferService:
 
     def __init__(
         self,
-        job_persistent_dir: Path,
-        transfer_staging_dir: Path,
-        transfer_cfgs: List[TransferDaemonConfig],
-        site_id: int,
-        experiment_name: str,
+        transfer_methods: List[TransferMethod],
         callbacks: Optional[List[ShutDownCallback]] = None,
     ) -> None:
         """Initialize a transfer service.
 
         Parameters
         ----------
-        job_persistent_dir : Path
-            Persistent directory for job output files.
-        transfer_staging_dir : Path
-            Directory to stage files for transfer.
-        transfer_cfgs : List[TransferDaemonConfig]
-            Configuration for transfer daemons.
-        site_id : int
-            Balsam site ID to use for transfers.
-        experiment_name : str
-            Experiment name to tag transfer jobs with.
+        transfer_methods : List[TransferMethod]
+            List of transfer methods to use.
         callbacks : List[ShutDownCallback], optional
             Optional list of callbacks to custumize shutdown behavior, by default []
         """
         self.exit_flag = Event()
-        # TODO: Is it possible to combine job_persistent_dir and transfer_staging_dir?
-        self.daemons = self._start_remote_transfers(
-            job_persistent_dir,
-            transfer_staging_dir,
-            transfer_cfgs,
-            site_id,
-            experiment_name,
-        )
-
         self.callbacks = [] if callbacks is None else callbacks
+        self.daemons = self._start_remote_transfers(transfer_methods)
 
     def _start_remote_transfers(
-        self,
-        job_persistent_dir: Path,
-        transfer_staging_dir: Path,
-        transfer_cfgs: List[TransferDaemonConfig],
-        site_id: int,
-        experiment_name: str,
+        self, transfer_methods: List[TransferMethod]
     ) -> List[Process]:
 
         daemons = []
-        for cfg in transfer_cfgs:
+        for transfer_method in transfer_methods:
             proc = Process(
-                target=_file_transfer_daemon,
-                daemon=True,
-                kwargs=dict(
-                    job_persistent_dir=job_persistent_dir,
-                    transfer_staging_dir=transfer_staging_dir,
-                    transfer_poll_time=cfg.poll_time,
-                    transfer_patterns=cfg.patterns,
-                    destination=cfg.destination,
-                    site_id=site_id,
-                    experiment_name=experiment_name,
-                    exit_flag=self.exit_flag,
-                ),
+                target=transfer_method.run, daemon=True, args=(self.exit_flag,)
             )
             proc.start()
             daemons.append(proc)

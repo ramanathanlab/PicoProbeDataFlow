@@ -10,8 +10,12 @@ from balsam.config import ClientSettings
 from pydantic import BaseModel
 
 from picoprobe.transfers import (
+    GlobusTransferMethod,
     JobSignalShutDownCallback,
-    TransferDaemonConfig,
+    LocalCopyTransferMethod,
+    ShutDownCallback,
+    TransferConfig,
+    TransferMethod,
     TransferService,
 )
 
@@ -23,8 +27,8 @@ class DataTransferConfig(BaseModel):
 
     root_scratch_dir: Path
     """The root scratch directory path."""
-    transfer_daemons: List[TransferDaemonConfig]
-    """List of TransferDaemonConfig's to specify destinations."""
+    transfer: TransferConfig
+    """TransferConfig to specify destination."""
 
 
 def run_job(transfer_service: TransferService) -> int:
@@ -90,15 +94,32 @@ class DataTransferApplication(ApplicationDefinition):
         job_scratch_dir = cfg.root_scratch_dir / str(self.job.workdir)
         job_scratch_dir.mkdir(parents=True, exist_ok=True)
 
+        transfer_methods: List[TransferMethod] = []
+        if (
+            isinstance(cfg.transfer.destination, str)
+            and ":" in cfg.transfer.destination
+        ):
+            transfer_methods.append(
+                GlobusTransferMethod(
+                    transfer_config=cfg.transfer,
+                    directory=job_scratch_dir,
+                    staging_dir=transfer_staging_dir,
+                    site_id=self.resolve_site_id(),
+                    experiment_name=self.job.tags.get("experiment", "no-experiment"),
+                )
+            )
+        else:
+            assert isinstance(cfg.transfer.destination, Path)
+            transfer_methods.append(
+                LocalCopyTransferMethod(
+                    transfer_config=cfg.transfer, directory=job_scratch_dir
+                )
+            )
+
+        callbacks: List[ShutDownCallback] = [JobSignalShutDownCallback(self.job)]
+
         # TODO: Test if the JobSignalShutDownCallback is necessary for this application
-        transfer_service = TransferService(
-            job_persistent_dir,
-            transfer_staging_dir,
-            cfg.transfer_daemons,
-            self.resolve_site_id(),
-            self.job.tags.get("experiment", "no-experiment"),
-            callbacks=[JobSignalShutDownCallback(self.job)],
-        )
+        transfer_service = TransferService(transfer_methods, callbacks)
 
         return_code = run_job(transfer_service=transfer_service)
 
