@@ -32,9 +32,8 @@ def run_job(transfer_service: TransferService) -> int:
 
     Parameters
     ----------
-    shutdown_callback : Callable[[], bool]
-        Function that returns True if the job should stop.
-        Evaluated each iteration.
+    transfer_service: TransferService
+        Manages the transfer of data and determines when to shutdown.
 
     Returns
     -------
