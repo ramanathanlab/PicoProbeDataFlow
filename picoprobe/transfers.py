@@ -3,9 +3,10 @@ import logging
 import shutil
 import subprocess
 import time
+from abc import ABC, abstractmethod
 from multiprocessing import Event, Process
 from pathlib import Path
-from typing import Dict, Iterable, List, Set, Union
+from typing import Dict, Iterable, List, Optional, Set, Union
 from uuid import uuid4
 
 from balsam.api import ApplicationDefinition, Job
@@ -256,10 +257,10 @@ def _file_transfer_daemon(
             )
 
 
-# TODO: This should be an abstract class
-class ShutDownCallback:
+class ShutDownCallback(ABC):
     """Abstract interface to define custom shutdown behavior."""
 
+    @abstractmethod
     def check_shutdown(self) -> bool:
         """Logic to determine if the transfer should shut down.
 
@@ -267,13 +268,8 @@ class ShutDownCallback:
         -------
         bool
             True if the transfer service should shutdown, otherwise False.
-
-        Raises
-        ------
-        NotImplementedError
-            If this method is not implemented.
         """
-        raise NotImplementedError()
+        pass
 
 
 # TOOD: Need to test if the balsam job object id is identical
@@ -322,7 +318,7 @@ class TransferService:
         transfer_cfgs: List[TransferDaemonConfig],
         site_id: int,
         experiment_name: str,
-        callbacks: List[ShutDownCallback] = [],  # TODO: Use default factory list
+        callbacks: Optional[List[ShutDownCallback]] = None,
     ) -> None:
         """Initialize a transfer service.
 
@@ -350,7 +346,8 @@ class TransferService:
             site_id,
             experiment_name,
         )
-        self.callbacks = callbacks
+
+        self.callbacks = [] if callbacks is None else callbacks
 
     def _start_remote_transfers(
         self,
@@ -392,14 +389,12 @@ class TransferService:
         shutdown = False
 
         # Check if any of the daemons have shutdown
-        daemon_died = any(not d.is_alive() for d in self.daemons)
-        if daemon_died:
+        if any(not d.is_alive() for d in self.daemons):
             logger.error("A transfer daemon failed! Aborting job.")
             shutdown = True
 
         # Check if any other callbacks want to shutdown
-        callback_shutdown = any(c.check_shutdown() for c in self.callbacks)
-        if callback_shutdown:
+        if any(c.check_shutdown() for c in self.callbacks):
             logger.info("A callback requested a shutdown of the transfer service.")
             shutdown = True
 
