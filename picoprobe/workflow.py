@@ -23,7 +23,7 @@ class DataTransferConfig(BaseModel):
 
     root_scratch_dir: Path
     """The root scratch directory path."""
-    transfer_daemons: List[TransferDaemonConfig] = []  # TODO: use list factory
+    transfer_daemons: List[TransferDaemonConfig]
     """List of TransferDaemonConfig's to specify destinations."""
 
 
