@@ -169,6 +169,39 @@ class TransferOut(ApplicationDefinition):
         return job
 
 
+class FileManager:
+    """Manage files to be transferred."""
+
+    def __init__(self, directory: Path, patterns: List[str]) -> None:
+        """Initialize a FileManager to gather files from `directory` matching glob `patterns`.
+
+        Parameters
+        ----------
+        directory : Path
+            Directory to gather files from.
+        patterns : List[str]
+            List of glob patterns to match files.
+        """
+        self.directory = directory
+        self.patterns = patterns
+        self.seen_files: Set[Path] = set()
+
+    def gather_unseen_files(self) -> Set[Path]:
+        """Gather all files in `directory` that have not been seen before.
+
+        Returns
+        -------
+        Set[Path]
+            Set of files that have not been seen before.
+        """
+        all_files = {
+            file for pattern in self.patterns for file in self.directory.glob(pattern)
+        }
+        unseen_files = all_files - self.seen_files
+        self.seen_files.update(unseen_files)
+        return unseen_files
+
+
 def _file_transfer_daemon(
     job_persistent_dir: Path,
     transfer_staging_dir: Path,
@@ -211,8 +244,11 @@ def _file_transfer_daemon(
     ValueError
         If `destination` is invalid
     """
-    seen_files: Set[Path] = set()
+    # Set the current daemon process TransferOut site
     TransferOut.site = site_id
+
+    # Create a FileManager to collect files to transfer
+    file_manager = FileManager(job_persistent_dir, transfer_patterns)
 
     # TODO: There is a small non-critical race condition where a new file
     #       matching pattern may be added to the persistent directory
@@ -221,13 +257,7 @@ def _file_transfer_daemon(
     #       for the last output files of the simulation.
     while not exit_flag.is_set():  # type: ignore[attr-defined]
         time.sleep(transfer_poll_time)
-        all_files = {
-            file
-            for pattern in transfer_patterns
-            for file in job_persistent_dir.glob(pattern)
-        }
-        to_transfer = all_files - seen_files
-        seen_files.update(to_transfer)
+        to_transfer = file_manager.gather_unseen_files()
         # If there are no new files, don't submit a new transfer job
         if not to_transfer:
             continue
