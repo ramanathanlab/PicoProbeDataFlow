@@ -62,7 +62,7 @@ def run_untar_loop(
                 logger.debug(f"At {max_concurrent_untars} max concurrent untars")
                 break
             logger.info(f"Untarring {tar_file}")
-            p = subprocess.Popen(
+            p = subprocess.Popen(  # pylint: disable=R1732
                 f"tar -xvf {tar_file.name}", cwd=input_directory, shell=True
             )
             processes.append(p)
@@ -234,7 +234,7 @@ class TransferMethod(ABC):
 class GlobusTransferMethod(TransferMethod):
     """Method for transfering files across sites."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         transfer_config: TransferConfig,
         directory: Path,
@@ -310,7 +310,7 @@ class LocalCopyTransferMethod(TransferMethod):
             shutil.copy(src, self.destination)
 
 
-class ShutDownCallback(ABC):
+class ShutDownCallback(ABC):  # pylint: disable=R0903
     """Abstract interface to define custom shutdown behavior."""
 
     @abstractmethod
@@ -334,7 +334,7 @@ class ShutDownCallback(ABC):
 #           return shutdown
 
 
-class JobSignalShutDownCallback(ShutDownCallback):
+class JobSignalShutDownCallback(ShutDownCallback):  # pylint: disable=R0903
     """Custom shutdown callback that listens for a shutdown signal from the Balsam job."""
 
     def __init__(self, job: Job) -> None:
