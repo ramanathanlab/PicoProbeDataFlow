@@ -82,7 +82,7 @@ class TransferConfig(BaseModel):
     """Number of seconds between polling for new files to transfer."""
     patterns: List[str]
     """List of glob patterns to match files to transfer."""
-    destination: Union[str, Path]
+    destination: PathLike
     """Where to transfer files to. Must be either Balsam LOC:PATH string or a local Path."""
 
     @validator("destination")
@@ -141,6 +141,11 @@ class TransferOut(ApplicationDefinition):
             Globus transfer destination of the form LOC:PATH.
         experiment_name : str
             Experiment name to tag transfer jobs with.
+
+        Returns
+        -------
+        Job
+            A Balsam Job object reference to the submitted transfer job.
         """
         transfer_id = str(uuid4())
         site_data_path = SiteConfig().data_path
