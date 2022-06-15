@@ -13,7 +13,9 @@ class LocalDataTransferApplication(DataTransferApplication):
 
 class ThetaDataTransferApplication(DataTransferApplication):
     site = "thetagpu-picoprobe"
-    python_exe = "/lus/eagle/projects/CVD-Mol-AI/braceal/envs/conda-env-picoprobe"
+    python_exe = (
+        "/lus/eagle/projects/CVD-Mol-AI/braceal/envs/conda-env-picoprobe/bin/python"
+    )
 
 
 class Application:
