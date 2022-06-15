@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     experiment_name = "test-experiment"
     experiment_dir = Path(
-        "/Users/abrace/src/PicoProbeDataFlow/examples/test-experiment"
+        "/eagle/CVD-Mol-AI/braceal/src/PicoProbeDataFlow/examples/test-experiment"
     )
     cfg = DataTransferConfig(
         root_scratch_dir=experiment_dir / "source",
