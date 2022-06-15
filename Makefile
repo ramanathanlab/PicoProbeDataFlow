@@ -10,7 +10,7 @@ format:
 .PHONY: lint
 lint:
 	$(black) --check --diff
-	flake8 picoprobe/ examples/ test/
+	flake8 picoprobe/ #examples/ test/
 	pylint picoprobe/ #examples/ test/
 	pydocstyle picoprobe/
 
