@@ -33,6 +33,7 @@ class Application:
     def run(self) -> None:
         self.job = ThetaDataTransferApplication.submit(
             workdir=Path(self.experiment_name),
+            gpus_per_rank=1,
             data={"shutdown": False},
             tags={"experiment": self.experiment_name},
             cfg_dict=self.cfg.dict(),
