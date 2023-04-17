@@ -1,7 +1,10 @@
+"""My module."""
 import time
-from typing import Optional
-from balsam.api import Job, BatchJob
 from pathlib import Path
+from typing import Optional
+
+from balsam.api import BatchJob, Job
+
 from picoprobe.transfers import TransferConfig
 from picoprobe.workflow import DataTransferApplication, DataTransferConfig
 

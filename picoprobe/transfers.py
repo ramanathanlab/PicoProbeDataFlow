@@ -75,6 +75,10 @@ def run_untar_loop(
             tar_file_ages.pop(f)
 
 
+# TODO: Along with the pattern suffixes, give the full directory path
+#       e.g. /path/to/*.txt, /path/to/*.csv
+#       This will allow for a more flexible interface incase multiple
+#       directories are being monitored.
 class TransferConfig(BaseModel):
     """Configuration for a data transfer daemon."""
 
