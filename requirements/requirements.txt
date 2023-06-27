@@ -1,2 +1,12 @@
 pydantic
 pyyaml
+watchdog
+gladier
+gladier-tools
+globus-compute-endpoint
+globus-search-cli
+pyFFTW>=0.13.1
+stempy
+scipy
+numpy
+matplotlib
