@@ -54,13 +54,17 @@ class TarAndTransferFlowHandler(BaseFlowHandler):
 
     def on_any_event(self, event: FileSystemEvent) -> None:
         if event.is_directory and event.event_type == "created":
+            directory = Path(event.src_path)
             # If the directory is empty, return
-            if not any(Path(event.src_path).iterdir()):
+            if not any(directory.iterdir()):
                 return
+
+            # TODO: On restart, it might be good to keep a "seen" list
+            #       to avoid restarting old flows.
 
             #  Otherwise, start a new flow using the directory inputs
             flow_input = self.create_flow_input(event.src_path)
-            self.start_flow(flow_input)
+            self.start_flow(flow_input, run_label=f"TarAndTransfer {directory.name}")
 
 
 if __name__ == "__main__":

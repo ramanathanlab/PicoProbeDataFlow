@@ -12,7 +12,7 @@ sys.path.append("../examples")
 
 
 class MockTarAndTransferFlowHandler(TarAndTransferFlowHandler):
-    def start_flow(self, flow_input: FlowInputType) -> None:
+    def start_flow(self, flow_input: FlowInputType, run_label: str) -> None:
         print(f"Starting flow with input:\n{flow_input}\n")
 
 

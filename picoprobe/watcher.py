@@ -59,23 +59,34 @@ class BaseFlowHandler(FileSystemEventHandler, ABC):
             if var not in os.environ:
                 raise MissingEnvironmentVariable(var)
 
-    def start_flow(self, flow_input: FlowInputType) -> None:
+    def start_flow(self, flow_input: FlowInputType, run_label: str = "Run") -> None:
+        """Start a new Globus flow.
+
+        Parameters
+        ----------
+        flow_input : FlowInputType
+            The input arguments to the flow.
+        run_label : str, optional
+            Label for the current run (This is the label that will be
+            presented on the globus webApp), by default "Run"
+        """
         # Log the flow information
-        print("Flow created with ID: " + self.flow_client.get_flow_id())
-        print("https://app.globus.org/flows/" + self.flow_client.get_flow_id())
+        flow_id = self.flow_client.get_flow_id()
+        print("Flow created with ID: " + flow_id)
+        print("https://app.globus.org/flows/" + flow_id)
         print("")
         pprint(self.flow_client.get_flow_definition())
-
-        # Label for the current run (This is the label that will be presented on the globus webApp)
-        run_label = f"{type(self.flow_client)} Run"
+        print("Flow Input:")
+        pprint(flow_input)
 
         # Run the flow
         flow = self.flow_client.run_flow(flow_input=flow_input, label=run_label)
 
         # Log the flow run information
-        action_id = flow["action_id"]
-        print("Run started with ID: " + action_id)
-        print("https://app.globus.org/runs/" + action_id)
+        run_id = flow["action_id"]
+        print("Flow started with run ID: " + run_id)
+        print("https://app.globus.org/runs/" + run_id)
+        print("=" * 100)
 
     @abstractmethod
     def on_any_event(self, event: FileSystemEvent) -> None:
