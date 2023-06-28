@@ -5,7 +5,7 @@ from pathlib import Path
 from gladier import GladierBaseClient, generate_flow_definition
 from watchdog.events import FileSystemEvent
 
-from picoprobe.watcher import BaseFlowHandler, FlowInputType, Watcher
+from picoprobe.watcher import BaseFlowHandler, CheckPoint, FlowInputType, Watcher
 
 
 @generate_flow_definition
@@ -24,8 +24,13 @@ class TarAndTransferFlowHandler(BaseFlowHandler):
         "REMOTE_GLOBUS_ENDPOINT",
     ]
 
-    def __init__(self, remote_directory: str, flow_client: GladierBaseClient) -> None:
-        super().__init__(flow_client)
+    def __init__(
+        self,
+        remote_directory: str,
+        flow_client: GladierBaseClient,
+        checkpoint: CheckPoint,
+    ) -> None:
+        super().__init__(flow_client, checkpoint)
         self.remote_directory = remote_directory
 
     def create_flow_input(self, src_path: str) -> FlowInputType:
@@ -59,8 +64,9 @@ class TarAndTransferFlowHandler(BaseFlowHandler):
             if not any(directory.iterdir()):
                 return
 
-            # TODO: On restart, it might be good to keep a "seen" list
-            #       to avoid restarting old flows.
+            # Check to see if the event has been seen before and, if so, skip it
+            if self.checkpoint.seen(event.src_path):
+                return
 
             #  Otherwise, start a new flow using the directory inputs
             flow_input = self.create_flow_input(event.src_path)
@@ -72,13 +78,19 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-l", "--local_directory", required=True)
     parser.add_argument("-r", "--remote_directory", required=True)
+    parser.add_argument(
+        "-c", "--checkpoint_file", type=Path, default="gladier-checkpoint.txt"
+    )
     args = parser.parse_args()
 
     # Instantiate the flow client
     flow_client = TarAndTransfer()
 
     # Instantiate watcher which launches flows based on a flow handler
-    flow_handler = TarAndTransferFlowHandler(args.remote_directory, flow_client)
+    checkpoint = CheckPoint(args.checkpoint_file)
+    flow_handler = TarAndTransferFlowHandler(
+        args.remote_directory, flow_client, checkpoint
+    )
     w = Watcher(args.local_directory, flow_handler)
 
     # Start the flow

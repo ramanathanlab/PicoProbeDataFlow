@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 
 from examples.tar_and_transfer.main import TarAndTransfer, TarAndTransferFlowHandler
-from picoprobe.watcher import FlowInputType, Watcher
+from picoprobe.watcher import CheckPoint, FlowInputType, Watcher
 
 sys.path.append("../examples")
 
@@ -16,7 +16,7 @@ class MockTarAndTransferFlowHandler(TarAndTransferFlowHandler):
         print(f"Starting flow with input:\n{flow_input}\n")
 
 
-def test_mock_flow():
+def test_mock_flow() -> None:
     # Need to set environment variables to pass validation
     os.environ["LOCAL_FUNCX_ENDPOINT"] = ""
     os.environ["LOCAL_GLOBUS_ENDPOINT"] = ""
@@ -31,7 +31,8 @@ def test_mock_flow():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         # Instantiate watcher which launches flows based on a flow handler
-        flow_handler = MockTarAndTransferFlowHandler(tmpdir, flow_client)
+        checkpoint = CheckPoint(Path(tmpdir) / "checkpoint.txt")
+        flow_handler = MockTarAndTransferFlowHandler(tmpdir, flow_client, checkpoint)
         w = Watcher(tmpdir, flow_handler)
 
         # Start the mock flow

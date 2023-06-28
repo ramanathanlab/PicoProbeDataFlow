@@ -1,9 +1,10 @@
 import os
 import time
 from abc import ABC, abstractmethod
+from pathlib import Path
 from pprint import pprint
 from threading import Event
-from typing import Dict, List, Union
+from typing import Dict, List, Set, Union
 
 from gladier import GladierBaseClient
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
@@ -30,8 +31,8 @@ class Watcher:
         self.done = Event()
 
     def run(self) -> None:
-        self.observer.schedule(self.handler, self.directory, recursive=True)
-        self.observer.start()
+        self.observer.schedule(self.handler, self.directory, recursive=True)  # type: ignore
+        self.observer.start()  # type: ignore
         print(f"\nWatcher Running in {self.directory}/\n")
         try:
             while not self.done.is_set():
@@ -39,21 +40,49 @@ class Watcher:
         except Exception as e:
             print(f"Watcher caught exception: {e}")
         finally:
-            self.observer.stop()
+            self.observer.stop()  # type: ignore
 
         self.observer.join()
         print("\nWatcher Terminated\n")
 
 
+class CheckPoint:
+    def __init__(self, checkpoint_file: Path) -> None:
+        self.checkpoint_file = checkpoint_file
+
+        # Initialize a seen events set to not repeat past flows
+        self.seen_events: Set[str] = set()
+        if self.checkpoint_file.exists():
+            self.load_checkpoint()
+
+    def load_checkpoint(self) -> None:
+        self.seen_events = set(self.checkpoint_file.read_text().split("\n"))
+
+    def save_checkpoint(self, event: str) -> None:
+        self.seen_events.add(event)
+        with open(self.checkpoint_file, "a+") as f:
+            f.write(f"{event}\n")
+
+    def seen(self, event: str) -> bool:
+        """Returns True if the `event` has been seen, otherwise returns False."""
+        if event in self.seen_events:
+            return True
+        self.save_checkpoint(event)
+        return False
+
+
 class BaseFlowHandler(FileSystemEventHandler, ABC):
     required_env_vars: List[str] = []
 
-    def __init__(self, flow_client: GladierBaseClient) -> None:
+    def __init__(self, flow_client: GladierBaseClient, checkpoint: CheckPoint) -> None:
         super().__init__()
         self.flow_client = flow_client
-        self.validate_environment()
+        self.checkpoint = checkpoint
 
-    def validate_environment(self) -> None:
+        # Check that all environment variables exist
+        self._validate_environment()
+
+    def _validate_environment(self) -> None:
         """Validate a set of environment variables exist."""
         for var in self.required_env_vars:
             if var not in os.environ:
