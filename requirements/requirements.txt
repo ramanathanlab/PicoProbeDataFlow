@@ -10,3 +10,4 @@ stempy
 scipy
 numpy
 matplotlib
+hyperspy
