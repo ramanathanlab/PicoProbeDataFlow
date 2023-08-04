@@ -4,6 +4,7 @@
 
 # Common virtual environment names
 conda-env/
+gladier-checkpoint.txt
 
 
 ### JupyterNotebooks ###
