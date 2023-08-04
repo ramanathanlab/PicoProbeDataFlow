@@ -5,6 +5,7 @@ See `examples/` folder for specific ussage.
 
 ## Development
 
+### Installation
 Pip Locally:
 ```
 python3 -m venv env
@@ -26,6 +27,39 @@ pip install -e .
 ```
 
 To run dev tools (flake8, black, mypy): `make`
+
+### Globus Search Index
+PicoProbe uses Globus Search to index data. To configure Globus Search, run:
+```bash
+globus-search index --help
+globus-search login
+globus-search index list
+globus-search index create picoprobe_test picoprobe_testing
+globus-search index show 06625170-a9ee-4d68-b8dc-2480c9407966
+```
+
+### Configure a Globus Compute Endpoint
+```bash
+globus-compute-endpoint list
+globus-compute-endpoint start AlexsMacBookPro-06-2023
+```
+**Note**: Replace `AlexsMacBookPro-06-2023` with the name of your endpoint.
+
+## Usage
+To start the `tar_and_transfer` flow,
+- First start the `globus-compute-endpoint`.
+- Then, make sure your globus endpoints are activated.
+```bash
+source examples/tar_and_transfer/env.sh
+python  examples/tar_and_transfer/main.py -l ~/GlobusEndpoint/transfer-flow-test-send
+```
+
+To start the `picoprobe_metadata_flow` flow,
+```bash
+source examples/picoprobe_metadata_flow/env.sh
+python  examples/picoprobe_metadata_flow/main.py -l ~/GlobusEndpoint/transfer-flow-test-send
+```
+
 
 ## Contributing
 

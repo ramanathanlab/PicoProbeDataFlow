@@ -5,7 +5,7 @@ from pathlib import Path
 from gladier import GladierBaseClient, generate_flow_definition
 from watchdog.events import FileSystemEvent
 
-from picoprobe.watcher import BaseFlowHandler, CheckPoint, FlowInputType, Watcher
+from picoprobe.utils import BaseFlowHandler, CheckPoint, FlowInputType, Watcher
 
 
 @generate_flow_definition

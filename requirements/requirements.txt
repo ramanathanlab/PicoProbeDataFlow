@@ -1,10 +1,10 @@
 pydantic
 pyyaml
 watchdog
-gladier
-gladier-tools
+gladier==0.8.4
+gladier-tools==0.4.4
 globus-compute-endpoint
-globus-search-cli
+globus-search-cli==0.8.1
 pyFFTW>=0.13.1
 stempy
 scipy

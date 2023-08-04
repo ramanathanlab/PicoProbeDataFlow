@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 
 from examples.tar_and_transfer.main import TarAndTransfer, TarAndTransferFlowHandler
-from picoprobe.watcher import CheckPoint, FlowInputType, Watcher
+from picoprobe.utils import CheckPoint, FlowInputType, Watcher
 
 sys.path.append("../examples")
 
