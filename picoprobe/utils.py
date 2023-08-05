@@ -19,11 +19,14 @@ class MissingEnvironmentVariable(Exception):
 
 
 class GlobusEndpoint:
-    def __init__(self, endpoint_id: str, path: PathLike) -> None:
+    def __init__(
+        self, endpoint_id: str, rel_path: PathLike, abs_path: PathLike
+    ) -> None:
         self.endpoint_id = endpoint_id
-        self.path = Path(path)
+        self.rel_path = Path(rel_path)
+        self.abs_path = Path(abs_path)
 
-    def globify(self, path: PathLike) -> str:
+    def to_relative(self, path: PathLike) -> str:
         """Return the file name relative to the globus endpoint root path.
 
         Parameters
@@ -36,7 +39,22 @@ class GlobusEndpoint:
         str
             The path relative to the endpoint root (e.g., "globus_endpoint/file.txt")
         """
-        return str(self.path / Path(path).name)
+        return str(self.rel_path / Path(path).name)
+
+    def to_absolute(self, path: PathLike) -> str:
+        """Return the absolute file name.
+
+        Parameters
+        ----------
+        path : str
+            The path to the file in the globus endpoint (e.g., "globus_endpoint/file.txt")
+
+        Returns
+        -------
+        str
+            The absolute path (e.g., "/path/to/globus_endpoint/file.txt")
+        """
+        return str(self.abs_path / Path(path).name)
 
 
 class Watcher:
