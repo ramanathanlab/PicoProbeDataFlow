@@ -26,35 +26,39 @@ class GlobusEndpoint:
         self.rel_path = Path(rel_path)
         self.abs_path = Path(abs_path)
 
-    def to_relative(self, path: PathLike) -> str:
+    def to_relative(self, path: PathLike, subdir: PathLike = "") -> str:
         """Return the file name relative to the globus endpoint root path.
 
         Parameters
         ----------
         path : str
             The path to the file (e.g., "/path/to/globus_endpoint/file.txt")
+        subdir : str, optional
+            The subdirectory of the endpoint (e.g., "subdir" of "/path/to/globus_endpoint/subdir/file.txt")
 
         Returns
         -------
         str
             The path relative to the endpoint root (e.g., "globus_endpoint/file.txt")
         """
-        return str(self.rel_path / Path(path).name)
+        return str(self.rel_path / subdir / Path(path).name)
 
-    def to_absolute(self, path: PathLike) -> str:
+    def to_absolute(self, path: PathLike, subdir: PathLike = "") -> str:
         """Return the absolute file name.
 
         Parameters
         ----------
         path : str
             The path to the file in the globus endpoint (e.g., "globus_endpoint/file.txt")
+        subdir : str, optional
+            The subdirectory of the endpoint (e.g., "subdir" of "globus_endpoint/subdir/file.txt")
 
         Returns
         -------
         str
             The absolute path (e.g., "/path/to/globus_endpoint/file.txt")
         """
-        return str(self.abs_path / Path(path).name)
+        return str(self.abs_path / subdir / Path(path).name)
 
 
 class Watcher:

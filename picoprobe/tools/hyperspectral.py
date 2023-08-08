@@ -15,6 +15,7 @@ def hyperspectral_image_tool(**data):
         If no hyperspectral image is found in the experiment file.
     """
     import json
+    from pathlib import Path
     import hyperspy.api as hs
     import matplotlib.pyplot as plt
     import numpy as np
@@ -22,13 +23,13 @@ def hyperspectral_image_tool(**data):
     from typing import Optional, Tuple, Dict, Any
 
     def load_hyperspectral_image(
-        experiment_file: str,
+        experiment_file: Path,
     ) -> Tuple[npt.ArrayLike, npt.ArrayLike, Dict[str, Any]]:
         """Load the hyperspectral image from the experiment file.
 
         Parameters
         ----------
-        experiment_file : str
+        experiment_file : Path
             The path to the experiment file.
 
         Returns
@@ -55,6 +56,8 @@ def hyperspectral_image_tool(**data):
                 hs_image = signal._data
                 # Extract the metadata for the hyperspectral image
                 metadata = signal.metadata.as_dictionary()
+                # Convert the metadata to JSON (by default it has np.int64, np.float64, etc.)
+                metadata = json.loads(json.dumps(metadata))
                 break
         else:
             raise ValueError(
@@ -72,7 +75,7 @@ def hyperspectral_image_tool(**data):
         return hs_image, energy, metadata
 
     def plot_hyperspectral_image(
-        hs_image: npt.ArrayLike, energy: npt.ArrayLike, savefile: Optional[str] = None
+        hs_image: npt.ArrayLike, energy: npt.ArrayLike, savefile: Optional[Path] = None
     ) -> None:
         """Plot the hyperspectral image and spectrum.
 
@@ -82,7 +85,7 @@ def hyperspectral_image_tool(**data):
             The hyperspectral image with shape (X, Y, S).
         energy : npt.ArrayLike
             The energy axis with shape (S,).
-        savefile : Optional[str], optional
+        savefile : Optional[Path], optional
             A path to save the plot .png file, by default None
         """
         fig, (ax_im, ax_spec) = plt.subplots(1, 2, figsize=(15, 5))
@@ -113,25 +116,26 @@ def hyperspectral_image_tool(**data):
     }
 
     # Unpack the experiment file from the input payload
-    experiment_file = data["publishv2"]["dataset"]
+    experiment_dir = data["publishv2"]["dataset"]
+    experiment_file = next(Path(experiment_dir).glob("*.emd"))
 
     # Load the microscopy dataset and extract metadata
     hs_image, energy, experiment_metadata = load_hyperspectral_image(experiment_file)
 
     # Plot the hyperspectral image and spectrum
-    plot_file = experiment_file.replace(".emd", "-hyperspectral.png")
+    plot_file = experiment_file.with_suffix(".png")
     plot_hyperspectral_image(hs_image, energy, plot_file)
 
     # Add the experiment metadata to the general metadata
     metadata["experiment_metadata"] = experiment_metadata
-    metadata["hyperspectral_image"] = plot_file
+    metadata["hyperspectral_image"] = str(plot_file)
 
     # Update the output data with the experiment metadata
     final_data = data["publishv2"]
     final_data["metadata"] = metadata
 
     # Save the metadata to a file
-    metadata_file = experiment_file.replace(".emd", "-metadata.json")
+    metadata_file = experiment_file.with_suffix(".json")
     with open(metadata_file, "w") as f:
         f.write(json.dumps(final_data, indent=4))
 

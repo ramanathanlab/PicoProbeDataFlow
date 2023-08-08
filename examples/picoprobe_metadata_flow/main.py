@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from argparse import ArgumentParser
 from pathlib import Path
 from gladier import GladierBaseClient, generate_flow_definition
@@ -14,19 +15,19 @@ from picoprobe.utils import (
 )
 
 
-# @generate_flow_definition(
-#     modifiers={
-#         "publishv2_gather_metadata": {"payload": "$.GatherMetadata.details.result[0]"}
-#     }
-# )
-
-
-@generate_flow_definition
-class PicoProbeMetadataFlow_v3(GladierBaseClient):
+@generate_flow_definition(
+    modifiers={
+        "publishv2_gather_metadata": {
+            "payload": "$.HyperspectralImageTool.details.results[0].output"
+        }
+    }
+)
+# @generate_flow_definition
+class PicoProbeMetadataFlow_v4(GladierBaseClient):
     gladier_tools = [
         "gladier_tools.globus.Transfer",
         HyperspectralImageTool,
-        # "gladier_tools.publish.Publishv2",
+        "gladier_tools.publish.Publishv2",
     ]
 
 
@@ -42,6 +43,8 @@ class PicoProbeMetadataFlowHandler(BaseFlowHandler):
         "REMOTE_GLOBUS_ABS_PATH",
         # Remote Compute
         "REMOTE_FUNCX_ENDPOINT",
+        # Search Index
+        "GLOBUS_SEARCH_INDEX",
     ]
 
     def __init__(self, flow_client: GladierBaseClient, checkpoint: CheckPoint) -> None:
@@ -59,6 +62,11 @@ class PicoProbeMetadataFlowHandler(BaseFlowHandler):
         )
 
     def create_flow_input(self, src_path: str) -> FlowInputType:
+        # Put remote data inside a time-stamped directory
+        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+        # Path to the remote directory containing experiment results and analysis
+        remote_experiment_dir = str(Path(self.remote.to_absolute(src_path, ts)).parent)
+
         flow_input = {
             "input": {
                 # Step 1. Transfer from local to remote
@@ -66,24 +74,22 @@ class PicoProbeMetadataFlowHandler(BaseFlowHandler):
                 "transfer_source_endpoint_id": self.local.endpoint_id,
                 "transfer_destination_endpoint_id": self.remote.endpoint_id,
                 "transfer_source_path": self.local.to_relative(src_path),
-                "transfer_destination_path": self.remote.to_relative(src_path),
+                "transfer_destination_path": self.remote.to_relative(src_path, ts),
                 "transfer_recursive": False,
                 # ============================
                 # Step 2. Gather metadata from the remote file
                 # TODO: Figure out what the working directory of the funcx endpoint is
                 "funcx_endpoint_compute": os.getenv("REMOTE_FUNCX_ENDPOINT"),
-                # "funcx_endpoint_non_compute": os.getenv("REMOTE_FUNCX_ENDPOINT"),
+                "funcx_endpoint_non_compute": os.getenv("REMOTE_FUNCX_ENDPOINT"),
                 "publishv2": {
-                    "dataset": self.remote.to_absolute(src_path),
-                    # "index": "aefcecc6-e554-4f8c-a25b-147f23091944",
-                    # "project": "reports",
-                    # "source_collection": "eeabbb24-b47d-11ed-a504-1f2a3a60e896",
-                    # "source_collection_basepath": "/",
-                    # "destination_collection": "bb8d048a-2cad-4029-a9c7-671ec5d1f84d",
-                    "metadata": {},
-                    # "ingest_enabled": True,
-                    # "transfer_enabled": True,
-                    # "destination": str("/portal/reports/" + str(dest_path)),
+                    "dataset": remote_experiment_dir,
+                    "destination": remote_experiment_dir,
+                    "source_collection": self.remote.endpoint_id,
+                    "destination_collection": self.remote.endpoint_id,
+                    "index": os.getenv("GLOBUS_SEARCH_INDEX"),
+                    "metadata": {},  # Populated in the HyperspectralImageTool
+                    "ingest_enabled": True,
+                    "transfer_enabled": False,
                     "visible_to": ["public"],
                 },
                 # ============================
@@ -121,7 +127,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Instantiate the flow client
-    flow_client = PicoProbeMetadataFlow_v3()
+    flow_client = PicoProbeMetadataFlow_v4()
 
     # Instantiate watcher which launches flows based on a flow handler
     checkpoint = CheckPoint(args.checkpoint_file)
