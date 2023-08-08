@@ -71,7 +71,6 @@ class PicoProbeMetadataFlowHandler(BaseFlowHandler):
                 # ============================
                 # Step 2. Gather metadata from the remote file
                 # TODO: Figure out what the working directory of the funcx endpoint is
-                # "make_input": str(remote_path),
                 "funcx_endpoint_compute": os.getenv("REMOTE_FUNCX_ENDPOINT"),
                 # "funcx_endpoint_non_compute": os.getenv("REMOTE_FUNCX_ENDPOINT"),
                 "publishv2": {
