@@ -4,7 +4,7 @@ from pathlib import Path
 from gladier import GladierBaseClient, generate_flow_definition
 from watchdog.events import FileSystemEvent
 
-from picoprobe.tools.gather_metadata import GatherMetadata
+from picoprobe.tools.hyperspectral import HyperspectralImageTool
 from picoprobe.utils import (
     BaseFlowHandler,
     CheckPoint,
@@ -22,19 +22,12 @@ from picoprobe.utils import (
 
 
 @generate_flow_definition
-class PicoProbeMetadataFlowv2(GladierBaseClient):
+class PicoProbeMetadataFlow_v3(GladierBaseClient):
     gladier_tools = [
         "gladier_tools.globus.Transfer",
-        GatherMetadata,
+        HyperspectralImageTool,
         # "gladier_tools.publish.Publishv2",
     ]
-
-
-# @generate_flow_definition
-# class PicoProbeMetadataFlow(GladierBaseClient):
-#     gladier_tools = [
-#         "gladier_tools.globus.Transfer",
-#     ]
 
 
 class PicoProbeMetadataFlowHandler(BaseFlowHandler):
@@ -129,7 +122,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Instantiate the flow client
-    flow_client = PicoProbeMetadataFlowv2()
+    flow_client = PicoProbeMetadataFlow_v3()
 
     # Instantiate watcher which launches flows based on a flow handler
     checkpoint = CheckPoint(args.checkpoint_file)
