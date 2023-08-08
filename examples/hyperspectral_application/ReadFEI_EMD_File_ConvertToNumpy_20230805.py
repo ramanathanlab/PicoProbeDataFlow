@@ -77,7 +77,7 @@ def openfile_dialog(DataDirPath, fileextension):
     from PyQt5 import QtGui, QtWidgets
 
     # ,---This line must be commented out otherwise program locks up
-    # app = QtWidgets.QApplication([dir])
+    app = QtWidgets.QApplication([dir])
     fname = QtWidgets.QFileDialog.getOpenFileName(
         None, "Select a file...", DataDirPath, filter="*." + str(fileextension)
     )  # filter="All files (*)")
@@ -406,78 +406,8 @@ try:  # this is a simple test routine  to see if a Group Exists
                 "width"
             ]
             Param_Mem["PixelUnits"] = Image_MetaData_Dict["BinaryResult"]["PixelUnitX"]
-            #
-            #                for keys,values in Image_MetaData_Dict.items():
-            #                   print (keys, '=',values)
-            #               The MetaData is in the Variable Declaration, this printing is not needed for now, just comment it out
-            #                if Image_Data_Dimensions[2] >1:
-            #                    for keys2,values2 in Image_MetaData_Dict['Core'].items():
-            #                        print ('Core:',keys2,"=", values2)
-            #                    print('\n')
-            #                    for keys3,values3 in Image_MetaData_Dict['Instrument'].items():
-            #                        print ('Instrument:',keys3,"=", values3)
-            #                    print('\n')
-            #                    for keys4,values4 in Image_MetaData_Dict['Acquisition'].items():
-            #                        print ('Acquisition:',keys4,"=", values4)
-            #                    print('\n')
-            #                    for keys5,values5 in Image_MetaData_Dict['Optics'].items():
-            #                        if keys5 != "Apertures":
-            #                            print ('Optics:',keys5,"=", values5)
-            #                        else:
-            #                            print("in optics testing for apertures")
-            #                            for keys16,values16 in Image_MetaData_Dict['Optics']['Apertures']['Aperture-0'].items() :
-            #                                print ('Optics-Aperture-0:',keys16,"=", values16)
-            #                            for keys16,values16 in Image_MetaData_Dict['Optics']['Apertures']['Aperture-1'].items() :
-            #                                print ('Optics-Aperture-1:',keys16,"=", values16)
-            #                            for keys16,values16 in Image_MetaData_Dict['Optics']['Apertures']['Aperture-2'].items() :
-            #                                print ('Optics-Aperture-2:',keys16,"=", values16)
-            #                            for keys16,values16 in Image_MetaData_Dict['Optics']['Apertures']['Aperture-3'].items() :
-            #                                print ('Optics-Aperture-3:',keys16,"=", values16)
-            #                    print('\n')
-            #                    for keys6,values6 in Image_MetaData_Dict['EnergyFilter'].items():
-            #                        print ('EnergyFilter:',keys6,"=", values6)
-            #                    print('\n')
-            #                    for keys7,values7 in Image_MetaData_Dict['Stage'].items():
-            #                        print ('Stage:',keys7,"=", values7)
-            #                    print('\n')
-            #                    for keys8,values8 in Image_MetaData_Dict['Scan'].items():
-            #                        print ('Scan:',keys8,"=", values8)
-            #                    print('\n')
-            #                    for keys9,values9 in Image_MetaData_Dict['Vacuum'].items():
-            #                        print ('Vacuum:',keys9,"=", values9)
-            #                    print('\n')
-            #    #                for keys10,values10 in Image_MetaData_Dict['Detectors'].items():
-            #    #                    print ('Detectors:',keys10,"=", values10)
-            #    #                for keys11,values11 in Image_MetaData_Dict['Sample'].items():
-            #    #                    print ('Sample:',keys11,"=", values11)
-            #    #                for keys12,values12 in Image_MetaData_Dict['GasInjectionSystems'].items():
-            #    #                    print ('GasInjectionSystems:',keys12,"=", values12)
-            #    #                print('\n')
-            #    #                for keys13,values13 in Image_MetaData_Dict['Detectors'].items():
-            #    #                    print ('Detectors:',keys13,"=", values13)
-            #                    for keys13,values13 in Image_MetaData_Dict['Detectors']['Detector-0'].items():
-            #                        print ('Detector-0:',keys13,"=", values13)
-            #                    for keys13,values13 in Image_MetaData_Dict['Detectors']['Detector-1'].items():
-            #                        print ('Detector-1:',keys13,"=", values13)
-            #                    for keys13,values13 in Image_MetaData_Dict['Detectors']['Detector-2'].items():
-            #                        print ('Detector-2:',keys13,"=", values13)
-            #                    for keys13,values13 in Image_MetaData_Dict['Detectors']['Detector-3'].items():
-            #                        print ('Detector-3:',keys13,"=", values13)
-            #                    for keys13,values13 in Image_MetaData_Dict['Detectors']['Detector-4'].items():
-            #                        print ('Detector4:',keys13,"=", values13)
-            #                    for keys13,values13 in Image_MetaData_Dict['Detectors']['Detector-5'].items():
-            #                        print ('Detector-5:',keys13,"=", values13)
-            #                    for keys13,values13 in Image_MetaData_Dict['Detectors']['Detector-6'].items():
-            #                        print ('Detector-6:',keys13,"=", values13)
-            #                    for keys13,values13 in Image_MetaData_Dict['Detectors']['Detector-7'].items():
-            #                        print ('Detector-7:',keys13,"=", values13)
-            #                    for keys13,values13 in Image_MetaData_Dict['Detectors']['Detector-8'].items():
-            #                        print ('Detector-8:',keys13,"=", values13)
-            #                    print('\n')
-            #                    for keys14,values14 in Image_MetaData_Dict['CustomProperties'].items():
-            #                        print ('CustomProperties:',keys14,"=", values14)
 
-            #                Now read in the data array from HDF ... note it is in a 16bit integer format!
+            # Now read in the data array from HDF ... note it is in a 16bit integer format!
 
             SImageFrame = np.array(
                 Image_Data[
@@ -627,82 +557,6 @@ try:  # this is a simple test routine  to see if a Group Exists
         Spectrum_MetaData_Dict = json.loads(
             Spectrum_MetaData_Text.rstrip("\x00")
         )  # \x00 is a NULL
-        #
-        # for keys,values in Spectrum_MetaData_Dict.items():
-        #    print (keys, '=',values)
-
-        ##               The MetaData is in the Variable Declaration, this printing is not needed for now, just comment it out
-        #
-        #
-        #        for keys2,values2 in Spectrum_MetaData_Dict['Core'].items():
-        #            print ('Core:',keys2,"=", values2)
-        #        print('\n')
-        #        for keys3,values3 in Spectrum_MetaData_Dict['Instrument'].items():
-        #            print ('Instrument:',keys3,"=", values3)
-        #        print('\n')
-        #        for keys4,values4 in Spectrum_MetaData_Dict['Acquisition'].items():
-        #            print ('Acquisition:',keys4,"=", values4)
-        #        print('\n')
-        #        for keys5,values5 in Spectrum_MetaData_Dict['Optics'].items():
-        #            if keys5 != "Apertures":
-        #                print ('Optics:',keys5,"=", values5)
-        #            else:
-        #                print("in optics testing for apertures")
-        #                for keys16,values16 in Spectrum_MetaData_Dict['Optics']['Apertures']['Aperture-0'].items() :
-        #                    print ('Optics-Aperture-0:',keys16,"=", values16)
-        #                for keys16,values16 in Spectrum_MetaData_Dict['Optics']['Apertures']['Aperture-1'].items() :
-        #                    print ('Optics-Aperture-1:',keys16,"=", values16)
-        #                for keys16,values16 in Spectrum_MetaData_Dict['Optics']['Apertures']['Aperture-2'].items() :
-        #                    print ('Optics-Aperture-2:',keys16,"=", values16)
-        #                for keys16,values16 in Spectrum_MetaData_Dict['Optics']['Apertures']['Aperture-3'].items() :
-        #                    print ('Optics-Aperture-3:',keys16,"=", values16)
-        #        print('\n')
-        #        for keys6,values6 in Spectrum_MetaData_Dict['EnergyFilter'].items():
-        #            print ('EnergyFilter:',keys6,"=", values6)
-        #        print('\n')
-        #        for keys7,values7 in Spectrum_MetaData_Dict['Stage'].items():
-        #            print ('Stage:',keys7,"=", values7)
-        #        print('\n')
-        #        for keys8,values8 in Spectrum_MetaData_Dict['Scan'].items():
-        #            print ('Scan:',keys8,"=", values8)
-        #        print('\n')
-        #        for keys9,values9 in Spectrum_MetaData_Dict['Vacuum'].items():
-        #            print ('Vacuum:',keys9,"=", values9)
-        #        print('\n')
-        #
-        #        for keys9,values9 in Spectrum_MetaData_Dict['BinaryResult'].items():
-        #            print ('BinaryResult:',keys9,"=", values9)
-        #        print('\n')
-        ##                for keys10,values10 in Spectrum_MetaData_Dict['Detectors'].items():
-        ##                    print ('Detectors:',keys10,"=", values10)
-        ##                for keys11,values11 in Spectrum_MetaData_Dict['Sample'].items():
-        ##                    print ('Sample:',keys11,"=", values11)
-        ##                for keys12,values12 in Spectrum_MetaData_Dict['GasInjectionSystems'].items():
-        ##                    print ('GasInjectionSystems:',keys12,"=", values12)
-        ##                print('\n')
-        ##                for keys13,values13 in Spectrum_MetaData_Dict['Detectors'].items():
-        ##                    print ('Detectors:',keys13,"=", values13)
-        #        for keys13,values13 in Spectrum_MetaData_Dict['Detectors']['Detector-0'].items():
-        #            print ('Detector-0:',keys13,"=", values13)
-        #        for keys13,values13 in Spectrum_MetaData_Dict['Detectors']['Detector-1'].items():
-        #            print ('Detector-1:',keys13,"=", values13)
-        #        for keys13,values13 in Spectrum_MetaData_Dict['Detectors']['Detector-2'].items():
-        #            print ('Detector-2:',keys13,"=", values13)
-        #        for keys13,values13 in Spectrum_MetaData_Dict['Detectors']['Detector-3'].items():
-        #            print ('Detector-3:',keys13,"=", values13)
-        #        for keys13,values13 in Spectrum_MetaData_Dict['Detectors']['Detector-4'].items():
-        #            print ('Detector4:',keys13,"=", values13)
-        #        for keys13,values13 in Spectrum_MetaData_Dict['Detectors']['Detector-5'].items():
-        #            print ('Detector-5:',keys13,"=", values13)
-        #        for keys13,values13 in Spectrum_MetaData_Dict['Detectors']['Detector-6'].items():
-        #            print ('Detector-6:',keys13,"=", values13)
-        #        for keys13,values13 in Spectrum_MetaData_Dict['Detectors']['Detector-7'].items():
-        #            print ('Detector-7:',keys13,"=", values13)
-        #        for keys13,values13 in Spectrum_MetaData_Dict['Detectors']['Detector-8'].items():
-        #            print ('Detector-8:',keys13,"=", values13)
-        #        print('\n')
-        #        for keys14,values14 in Spectrum_MetaData_Dict['CustomProperties'].items():
-        #            print ('CustomProperties:',keys14,"=", values14)
         #
 
         # print(Spectrum_MetaData.value)
