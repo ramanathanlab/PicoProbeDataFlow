@@ -19,9 +19,10 @@ from picoprobe.utils import (
 
 @generate_flow_definition(
     modifiers={
+        "hyperspectral_image_tool": {"endpoint": "funcx_endpoint_non_compute"},
         "publishv2_gather_metadata": {
             "payload": "$.HyperspectralImageTool.details.results[0].output"
-        }
+        },
     }
 )
 class PicoProbeMetadataFlow_v4(GladierBaseClient):
@@ -69,8 +70,8 @@ class PicoProbeMetadataFlowHandler(BaseFlowHandler):
                 "transfer_destination_path": self.remote.to_relative(src_path, ts),
                 "transfer_recursive": False,
                 # ============================
-                # Step 2. Gather metadata from the remote file
-                "funcx_endpoint_compute": self.config.remote_funcx_endpoint,
+                # Step 2-3. Gather metadata from the remote file, plot the hyperspectral image
+                # and publish the metadata to Globus Search
                 "funcx_endpoint_non_compute": self.config.remote_funcx_endpoint,
                 "publishv2": {
                     "dataset": remote_experiment_dir,

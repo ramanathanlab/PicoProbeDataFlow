@@ -146,4 +146,4 @@ def hyperspectral_image_tool(**data):
 @generate_flow_definition
 class HyperspectralImageTool(GladierBaseTool):
     funcx_functions = [hyperspectral_image_tool]
-    required_input = ["funcx_endpoint_compute", "publishv2"]
+    required_input = ["publishv2"]
