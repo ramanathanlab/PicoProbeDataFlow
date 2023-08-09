@@ -4,7 +4,7 @@
 
 local_globus_endpoint: 
   endpoint_id: 4f5d2f40-365e-11ee-9206-5b20905a64b1
-  rel_path: .GlobusEndpoint\transfer-flow-test-send
+  rel_path: transfer-flow-test-send #.GlobusEndpoint\transfer-flow-test-send
   abs_path: C:\Users\sprou\.GlobusEndpoint\transfer-flow-test-send
 
 remote_globus_endpoint: 
