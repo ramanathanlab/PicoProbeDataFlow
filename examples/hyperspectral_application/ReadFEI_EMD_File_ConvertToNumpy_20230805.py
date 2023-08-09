@@ -53,17 +53,17 @@
 #
 # import required libraries
 import csv
+import json
 import sys
 import time
-import scipy as sc
-import numpy as np
-from numpy import ndarray
-from scipy import ndimage, misc
-from scipy.ndimage import gaussian_filter, uniform_filter
-import json
-import h5py  # hdf 5 file library
 
+import h5py  # hdf 5 file library
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy as sc
+from numpy import ndarray
+from scipy import misc, ndimage
+from scipy.ndimage import gaussian_filter, uniform_filter
 
 # from mpl_toolkits.mplot3d import axes3d
 # offsfrom matplotlib.widgets import Slider, Button, RadioButtons
@@ -73,7 +73,6 @@ plt.ion()  # this turns on interactive mode in matplotlib
 
 # this routine implements  a dialog box to get the data file
 def openfile_dialog(DataDirPath, fileextension):
-    from PyQt5 import QtGui
     from PyQt5 import QtGui, QtWidgets
 
     # ,---This line must be commented out otherwise program locks up

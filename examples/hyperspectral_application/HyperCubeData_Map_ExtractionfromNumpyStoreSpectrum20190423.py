@@ -16,19 +16,21 @@
 # -------------------------------------------------------------------
 
 
+import json
+import time
+
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+import matplotlib.widgets as mwidgets
+
 # import required libraries
 # import csv
 # import sys
 # import time
 # import scipy as sc
-import numpy as np
-import time
 import numpy
-import json
-import matplotlib.gridspec as gridspec
-import matplotlib.widgets as mwidgets
+import numpy as np
 from matplotlib import path
-import matplotlib.pyplot as plt
 
 
 class AEMInteract(object):
@@ -323,7 +325,6 @@ def openfile_dialog(DataDirPath, fileextension):
     #
     # this routine implements  a dialog box to get the data file
     #
-    from PyQt5 import QtGui
     from PyQt5 import QtGui, QtWidgets
 
     if DataDirPath == "":
