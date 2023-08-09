@@ -1,7 +1,7 @@
 # Test home windows transfer to macbook
 ALEXS_MACBOOK_FUNCX_ENDPOINT="674446c2-4dc6-41a6-b767-bf6ce67df702"
 ALEXS_MACBOOK_GLOBUS_ENDPOINT="5e02fe02-ad3f-11ec-bf90-ab28bf5d96bb"
-ALEXS_HOME_WINDOWS_GLOBUS_ENDPOINT="c77ef0d2-365c-11ee-9206-5b20905a64b1"
+ALEXS_HOME_WINDOWS_GLOBUS_ENDPOINT="4f5d2f40-365e-11ee-9206-5b20905a64b1"
 ALEXS_HOME_WINDOWS_SEND_GLOBUS_REL_PATH=".GlobusEndpoint\transfer-flow-test-send"
 ALEXS_HOME_WINDOWS_SEND_GLOBUS_ABS_PATH="C:\Users\sprou\.GlobusEndpoint\transfer-flow-test-send"
 ALEXS_MACBOOK_RECV_GLOBUS_REL_PATH="GlobusEndpoint/transfer-flow-test-recv"
