@@ -56,7 +56,8 @@ class PicoProbeMetadataFlowHandler(BaseFlowHandler):
         # Put remote data inside a time-stamped directory
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
         # Path to the remote directory containing experiment results and analysis
-        remote_experiment_dir = str(Path(self.remote.to_absolute(src_path, ts)).parent)
+        remote_experiment_dir = self.remote.to_absolute(src_path, ts)
+        remote_experiment_dir = Path(remote_experiment_dir).parent.as_posix()
 
         flow_input = {
             "input": {
