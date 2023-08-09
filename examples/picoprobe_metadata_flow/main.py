@@ -22,7 +22,6 @@ from picoprobe.utils import (
         }
     }
 )
-# @generate_flow_definition
 class PicoProbeMetadataFlow_v4(GladierBaseClient):
     gladier_tools = [
         "gladier_tools.globus.Transfer",
@@ -78,7 +77,6 @@ class PicoProbeMetadataFlowHandler(BaseFlowHandler):
                 "transfer_recursive": False,
                 # ============================
                 # Step 2. Gather metadata from the remote file
-                # TODO: Figure out what the working directory of the funcx endpoint is
                 "funcx_endpoint_compute": os.getenv("REMOTE_FUNCX_ENDPOINT"),
                 "funcx_endpoint_non_compute": os.getenv("REMOTE_FUNCX_ENDPOINT"),
                 "publishv2": {
