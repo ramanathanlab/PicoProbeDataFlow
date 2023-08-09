@@ -1,3 +1,4 @@
+pydantic==1.10.12
 watchdog==3.0.0
 gladier==0.8.4
 gladier-tools==0.4.4
