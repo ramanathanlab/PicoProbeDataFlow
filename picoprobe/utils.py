@@ -57,7 +57,7 @@ class GlobusEndpoint(BaseModel):
         str
             The path relative to the endpoint root (e.g., "globus_endpoint/file.txt")
         """
-        return str(self.rel_path / subdir / Path(path).name)
+        return (self.rel_path / subdir / Path(path).name).as_posix()
 
     def to_absolute(self, path: PathLike, subdir: PathLike = "") -> str:
         """Return the absolute file name.
@@ -74,7 +74,7 @@ class GlobusEndpoint(BaseModel):
         str
             The absolute path (e.g., "/path/to/globus_endpoint/file.txt")
         """
-        return str(self.abs_path / subdir / Path(path).name)
+        return (self.abs_path / subdir / Path(path).name).as_posix()
 
 
 class Watcher:
