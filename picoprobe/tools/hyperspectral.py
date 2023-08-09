@@ -16,11 +16,12 @@ def hyperspectral_image_tool(**data):
     """
     import json
     from pathlib import Path
+    from typing import Any, Dict, Optional, Tuple
+
     import hyperspy.api as hs
     import matplotlib.pyplot as plt
     import numpy as np
     import numpy.typing as npt
-    from typing import Optional, Tuple, Dict, Any
 
     def load_hyperspectral_image(
         experiment_file: Path,

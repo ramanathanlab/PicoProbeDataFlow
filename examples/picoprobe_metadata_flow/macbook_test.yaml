@@ -1,0 +1,18 @@
+# This test transfers files from one directory in AlexsMacBook Globus
+# endpoint (transfer-flow-test-send) to another directory in the same
+# endpoint (transfer-flow-test-recv) to allow for convenient testing 
+# of the transfer service and workflow.
+
+local_globus_endpoint: 
+  endpoint_id: 5e02fe02-ad3f-11ec-bf90-ab28bf5d96bb
+  rel_path: GlobusEndpoint/transfer-flow-test-send
+  abs_path: /Users/abrace/GlobusEndpoint/transfer-flow-test-send
+
+remote_globus_endpoint: 
+  endpoint_id: 5e02fe02-ad3f-11ec-bf90-ab28bf5d96bb
+  rel_path: GlobusEndpoint/transfer-flow-test-recv
+  abs_path: /Users/abrace/GlobusEndpoint/transfer-flow-test-recv
+
+# This funcX endpoint is on AlexsMacBook
+remote_funcx_endpoint: 674446c2-4dc6-41a6-b767-bf6ce67df702
+globus_search_index: 6077d057-989d-41e2-b60b-91fe001f0687

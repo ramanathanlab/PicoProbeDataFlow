@@ -1,30 +1,46 @@
-import os
+import json
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 from pprint import pprint
 from threading import Event
-from typing import Dict, List, Set, Union
+from typing import Dict, Set, Type, TypeVar, Union
 
+import yaml
 from gladier import GladierBaseClient
+from pydantic import BaseModel as _BaseModel
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
 PathLike = Union[str, Path]
 FlowInputType = Dict[str, Dict[str, Union[str, bool, int, float]]]
 
-
-class MissingEnvironmentVariable(Exception):
-    pass
+_T = TypeVar("_T")
 
 
-class GlobusEndpoint:
-    def __init__(
-        self, endpoint_id: str, rel_path: PathLike, abs_path: PathLike
-    ) -> None:
-        self.endpoint_id = endpoint_id
-        self.rel_path = Path(rel_path)
-        self.abs_path = Path(abs_path)
+class BaseModel(_BaseModel):
+    """Base model to provide an easier interface to read/write YAML files."""
+
+    def dump_yaml(self, filename: PathLike) -> None:
+        with open(filename, mode="w") as fp:
+            yaml.dump(json.loads(self.json()), fp, indent=4, sort_keys=False)
+
+    @classmethod
+    def from_yaml(cls: Type[_T], filename: PathLike) -> _T:
+        with open(filename) as fp:
+            raw_data = yaml.safe_load(fp)
+        return cls(**raw_data)  # type: ignore
+
+
+class GlobusEndpoint(BaseModel):
+    """Represent a Globus endpoint."""
+
+    endpoint_id: str
+    """The Globus endpoint ID (e.g., "ddb59af0-6d04-11e5-ba58-22000b92c6ec")."""
+    rel_path: Path
+    """The relative path to the endpoint (e.g., "globus_endpoint/subdir")."""
+    abs_path: Path
+    """The absolute path to the endpoint (e.g., "/path/to/globus_endpoint/subdir")."""
 
     def to_relative(self, path: PathLike, subdir: PathLike = "") -> str:
         """Return the file name relative to the globus endpoint root path.
@@ -116,21 +132,10 @@ class CheckPoint:
 
 
 class BaseFlowHandler(FileSystemEventHandler, ABC):
-    required_env_vars: List[str] = []
-
     def __init__(self, flow_client: GladierBaseClient, checkpoint: CheckPoint) -> None:
         super().__init__()
         self.flow_client = flow_client
         self.checkpoint = checkpoint
-
-        # Check that all environment variables exist
-        self._validate_environment()
-
-    def _validate_environment(self) -> None:
-        """Validate a set of environment variables exist."""
-        for var in self.required_env_vars:
-            if var not in os.environ:
-                raise MissingEnvironmentVariable(var)
 
     def start_flow(self, flow_input: FlowInputType, run_label: str = "Run") -> None:
         """Start a new Globus flow.

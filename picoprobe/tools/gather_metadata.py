@@ -4,6 +4,7 @@ from gladier import GladierBaseTool, generate_flow_definition
 def gather_metadata(**data):
     import json
     from pathlib import Path
+
     import hyperspy.api as hs
 
     # General experiment metadata

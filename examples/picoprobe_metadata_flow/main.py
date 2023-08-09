@@ -1,13 +1,15 @@
-import os
-from datetime import datetime
 from argparse import ArgumentParser
+from datetime import datetime
 from pathlib import Path
+from pprint import pprint
+
 from gladier import GladierBaseClient, generate_flow_definition
 from watchdog.events import FileSystemEvent
 
 from picoprobe.tools.hyperspectral import HyperspectralImageTool
 from picoprobe.utils import (
     BaseFlowHandler,
+    BaseModel,
     CheckPoint,
     FlowInputType,
     GlobusEndpoint,
@@ -30,35 +32,25 @@ class PicoProbeMetadataFlow_v4(GladierBaseClient):
     ]
 
 
-class PicoProbeMetadataFlowHandler(BaseFlowHandler):
-    required_env_vars = [
-        # Local Transfer
-        "LOCAL_GLOBUS_ENDPOINT",
-        "LOCAL_GLOBUS_REL_PATH",
-        "LOCAL_GLOBUS_ABS_PATH",
-        # Remote Transfer
-        "REMOTE_GLOBUS_ENDPOINT",
-        "REMOTE_GLOBUS_REL_PATH",
-        "REMOTE_GLOBUS_ABS_PATH",
-        # Remote Compute
-        "REMOTE_FUNCX_ENDPOINT",
-        # Search Index
-        "GLOBUS_SEARCH_INDEX",
-    ]
+class PicoProbeFlowConfig(BaseModel):
+    local_globus_endpoint: GlobusEndpoint
+    remote_globus_endpoint: GlobusEndpoint
+    remote_funcx_endpoint: str
+    globus_search_index: str
 
-    def __init__(self, flow_client: GladierBaseClient, checkpoint: CheckPoint) -> None:
+
+class PicoProbeMetadataFlowHandler(BaseFlowHandler):
+    def __init__(
+        self,
+        config: PicoProbeFlowConfig,
+        flow_client: GladierBaseClient,
+        checkpoint: CheckPoint,
+    ) -> None:
         super().__init__(flow_client, checkpoint)
 
-        self.local = GlobusEndpoint(
-            os.environ["LOCAL_GLOBUS_ENDPOINT"],
-            os.environ["LOCAL_GLOBUS_REL_PATH"],
-            os.environ["LOCAL_GLOBUS_ABS_PATH"],
-        )
-        self.remote = GlobusEndpoint(
-            os.environ["REMOTE_GLOBUS_ENDPOINT"],
-            os.environ["REMOTE_GLOBUS_REL_PATH"],
-            os.environ["REMOTE_GLOBUS_ABS_PATH"],
-        )
+        self.config = config
+        self.local = config.local_globus_endpoint
+        self.remote = config.remote_globus_endpoint
 
     def create_flow_input(self, src_path: str) -> FlowInputType:
         # Put remote data inside a time-stamped directory
@@ -77,14 +69,14 @@ class PicoProbeMetadataFlowHandler(BaseFlowHandler):
                 "transfer_recursive": False,
                 # ============================
                 # Step 2. Gather metadata from the remote file
-                "funcx_endpoint_compute": os.getenv("REMOTE_FUNCX_ENDPOINT"),
-                "funcx_endpoint_non_compute": os.getenv("REMOTE_FUNCX_ENDPOINT"),
+                "funcx_endpoint_compute": self.config.remote_funcx_endpoint,
+                "funcx_endpoint_non_compute": self.config.remote_funcx_endpoint,
                 "publishv2": {
                     "dataset": remote_experiment_dir,
                     "destination": remote_experiment_dir,
                     "source_collection": self.remote.endpoint_id,
                     "destination_collection": self.remote.endpoint_id,
-                    "index": os.getenv("GLOBUS_SEARCH_INDEX"),
+                    "index": self.config.globus_search_index,
                     "metadata": {},  # Populated in the HyperspectralImageTool
                     "ingest_enabled": True,
                     "transfer_enabled": False,
@@ -118,18 +110,26 @@ class PicoProbeMetadataFlowHandler(BaseFlowHandler):
 if __name__ == "__main__":
     # Parse user arguments
     parser = ArgumentParser()
+    parser.add_argument("-c", "--config", type=Path, required=True)
     parser.add_argument("-l", "--local_dir", type=Path, required=True)
     parser.add_argument(
-        "-c", "--checkpoint_file", type=Path, default="gladier-checkpoint.txt"
+        "-p", "--checkpoint_file", type=Path, default="gladier-checkpoint.txt"
     )
     args = parser.parse_args()
+
+    # Load the configuration file
+    config = PicoProbeFlowConfig.from_yaml(args.config)
+
+    # Log the configuration
+    print("Configuration:")
+    pprint(config)
 
     # Instantiate the flow client
     flow_client = PicoProbeMetadataFlow_v4()
 
     # Instantiate watcher which launches flows based on a flow handler
     checkpoint = CheckPoint(args.checkpoint_file)
-    flow_handler = PicoProbeMetadataFlowHandler(flow_client, checkpoint)
+    flow_handler = PicoProbeMetadataFlowHandler(config, flow_client, checkpoint)
     w = Watcher(args.local_dir, flow_handler)
 
     # Start the flow
