@@ -28,6 +28,12 @@ pip install -e .
 
 To run dev tools (flake8, black, mypy): `make`
 
+### Setup a Globus Shared Endpoint on Eagle
+This enables Globus transfers (and Compute) read/write access for the PicoProbe data directory on Eagle:
+```bash
+setfacl -R -d -m group:APSDataAnalysis:rwx /eagle/APSDataAnalysis/PICOPROBE/
+```
+
 ### Setup a Globus Compute endpoint on Polaris
 On a login node run:
 ```bash
@@ -90,28 +96,29 @@ source examples/picoprobe_metadata_flow/env.sh
 python  examples/picoprobe_metadata_flow/main.py -l ~/GlobusEndpoint/transfer-flow-test-send
 ```
 
-
-## Contributing
-
-Please post an issue to request access to push new code, then run:
+### Configuring Windows10
+To start the watcher application on a Windows10 machine:
+1. First download python and git
+2. Open powershell
+3. Navigate to an installation directory of your choice (using `cd`)
+4. Download the PicoprobeDataFlow package:
+```console
+git clone https://github.com/ramanathanlab/PicoProbeDataFlow.git
 ```
-git checkout -b <branchname>
-git add <files you want>
-git commit -m 'message'
-git push
+5. Run the following command to enable the creation of a virtual environment: 
+```console
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
-Then open a pull request for a code review.
+6. Run the following commands to create a virtual environment:
+```console
+python -m venv env
+.\env\Scripts\activate
+``` 
+Now you should see (env) at the start of your prompt
 
-If contributing to the core picoprobe package, please add test cases
-mirroring the python module directory/file structure. Test file names
-should have the form `test_<module>.py`. Test cases can be run with:
-```
-pytest test -vs
-```
-
-To make the documentation with readthedocs:
-
-```
-cd docs/
-make html
+7. Install the package and dependencies:
+```console
+pip install -U setuptools wheel
+pip install -r .\requirements\windows_requirements.txt
+pip install -e .
 ```
