@@ -28,6 +28,36 @@ pip install -e .
 
 To run dev tools (flake8, black, mypy): `make`
 
+### Setup a Globus Compute endpoint on Polaris
+On a login node run:
+```bash
+module load conda/2023-01-10-unstable
+conda create -n picoprobe python=3.10
+conda activate picoprobe
+pip install -U pip setuptools wheel
+pip install -r requirements/requirements.txt
+pip install -e .
+
+globus-compute-endpoint configure picoprobe-non-compute
+globus-compute-endpoint start picoprobe-non-compute
+```
+
+Now we will need to update the globus-compute-endpoint configuration to use the 
+correct python version and add any user groups that require access. To do this, modify:
+```console
+~/.globus_compute/picoprobe-non-compute/config.py
+```
+
+By adding this as an argument to the `LocalProvider`: 
+```python
+worker_init="module load conda/2023-01-10-unstable; conda activate picoprobe"
+```
+
+To get the endpoint ID run,
+```bash
+globus-compute-endpoint list
+```
+
 ### Globus Search Index
 PicoProbe uses Globus Search to index data. To configure Globus Search, run:
 ```bash
