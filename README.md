@@ -97,7 +97,7 @@ python  examples/picoprobe_metadata_flow/main.py -l ~/GlobusEndpoint/transfer-fl
 ```
 
 ### Configuring Windows10
-To start the watcher application on a Windows10 machine:
+To setup the watcher application on a Windows10 machine:
 1. First download python and git
 2. Open powershell
 3. Navigate to an installation directory of your choice (using `cd`)
@@ -105,16 +105,16 @@ To start the watcher application on a Windows10 machine:
 ```console
 git clone https://github.com/ramanathanlab/PicoProbeDataFlow.git
 ```
-5. Run the following command to enable the creation of a virtual environment: 
+1. Run the following command to enable the creation of a virtual environment: 
 ```console
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
-6. Create a virtual environment (afterwards, you should see (env) at the start of your prompt):
+1. Create a virtual environment (afterwards, you should see (env) at the start of your prompt):
 ```console
 python -m venv env
 .\env\Scripts\activate
 ``` 
-7. Install the package and dependencies:
+1. Install the package and dependencies:
 ```console
 pip install -U setuptools wheel
 pip install -r .\requirements\windows_requirements.txt
