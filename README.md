@@ -109,7 +109,7 @@ git clone https://github.com/ramanathanlab/PicoProbeDataFlow.git
 ```console
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
-6. Run the following commands to create a virtual environment (afterwards, you should see (env) at the start of your prompt):
+6. Create a virtual environment (afterwards, you should see (env) at the start of your prompt):
 ```console
 python -m venv env
 .\env\Scripts\activate
