@@ -1,0 +1,51 @@
+
+Install git:
+https://git-scm.com/download/win
+
+Open Windows PowerShell and navigate to the software folder
+cd 'E:\PicoProbe User Local Data\Brace\software'
+
+The version of Python we are using:
+
+C:\ProgramData\Miniconda3\python.exe
+
+Install the source code:
+git clone https://github.com/ramanathanlab/PicoProbeDataFlow.git
+cd .\PicoProbeDataFlow\
+
+Enable the ability to run scripts from powershell
+For more information: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-7.3
+
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+
+Create a virtual environment:
+C:\ProgramData\Miniconda3\python.exe -m venv env
+.\env\Scripts\activate
+
+Checking the python location should return the new Python in the env\Scripts folder:
+where.exe python
+E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow\env\Scripts\python.exe
+
+The same holds for pip:
+where.exe pip
+E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow\env\Scripts\pip.exe
+
+
+Install the package:
+pip install -U setuptools wheel
+python -m pip install --upgrade pip
+pip install -r .\requirements\windows_requirements.txt
+pip install -e .
+
+
+The GlobusEndpoint configured on the User machine is rooted at C:\
+
+We will use this directory for our transfers:
+C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+
+
+Run the program:
+python .\examples\picoprobe_metadata_flow\main.py -c .\examples\picoprobe_metadata_flow\windows_picoprobe_to_polaris.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+
+
+

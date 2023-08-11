@@ -1,10 +1,10 @@
-# This test transfers files from one directory in AlexsHomeWindows Globus
-# endpoint (transfer-flow-test-send) to a directory on the Eagle@ALCF
-# file system (globus-transfer) to test the ALCF Globus Compute endpoint.
+# This test transfers files from one directory in PicoProbeUserDAComputerGlobus
+# endpoint (transfers) to a directory on the Eagle@ALCF file system (globus-transfer) 
+# to test the ALCF PicoProbe connection
 
-# On AlexsHomeWindows
+# On PicoProbeUserDAComputer
 local_globus_endpoint: 
-  endpoint_id: 
+  endpoint_id: 387aaf6e-3302-11ee-9200-5b20905a64b1
   rel_path: Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
   abs_path: C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
 
