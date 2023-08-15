@@ -48,4 +48,3 @@ Run the program:
 python .\examples\picoprobe_metadata_flow\main.py -c .\examples\picoprobe_metadata_flow\windows_picoprobe_to_polaris.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
 
 
-
