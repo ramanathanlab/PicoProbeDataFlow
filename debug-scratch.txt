@@ -1,0 +1,21 @@
+
+Watcher Running in C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+
+
+  
+{
+  "context": [
+    {
+      "operation": "Directory List / File Scan",
+      "path": "/~/C%3A/Users/PicoProbeUser/Documents/MicroscopeData/Brace/transfers/VeloxTest-Membranes.emd"
+    }
+  ],
+  "error": {
+    "body": "500 Command failed : A filename cannot contain any of the following characters: \\\\ / : * %3F \" < > %7C%0D%0A",
+    "code": 500,
+    "endpoint": "PicoProbeUserDAComputer (387aaf6e-3302-11ee-9200-5b20905a64b1)",
+    "server": "gsiftp://172.20.46.194:40689",
+    "type": "FTPServerError"
+  }
+}
+
