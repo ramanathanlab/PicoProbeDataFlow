@@ -64,6 +64,20 @@ To get the endpoint ID run,
 globus-compute-endpoint list
 ```
 
+### Setup a Globus Compute endpoint on a Polaris compute node
+```bash
+qsub -I -l select=1 -l walltime=1:00:00 -A RL-fold -q debug -l filesystems=home:eagle
+module load conda/2023-01-10-unstable
+conda activate
+conda create -n picoprobe-compute --clone base
+conda activate picoprobe-compute
+git clone https://github.com/ramanathanlab/PicoProbeDataFlow.git
+cd PicoProbeDataFlow
+pip install -U pip setuptools wheel
+pip install -r requirements/requirements.txt
+pip install -e .
+```
+
 ### Globus Search Index
 PicoProbe uses Globus Search to index data. To configure Globus Search, run:
 ```bash

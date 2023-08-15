@@ -11,8 +11,8 @@ local_globus_endpoint:
 # On Eagle@ALCF
 remote_globus_endpoint: 
   endpoint_id: 300ef593-e55e-4bc1-ab21-6d26d82c3b99
-  rel_path: PicoProbeTestEndpoint
-  abs_path: /lus/eagle/projects/APSDataAnalysis/PICOPROBE/PicoProbeTestEndpoint
+  rel_path: PicoProbeTestEndpoint/08-15-test
+  abs_path: /lus/eagle/projects/APSDataAnalysis/PICOPROBE/PicoProbeTestEndpoint/08-15-test
 
 # This funcX endpoint is on Polaris@ALCF
 remote_funcx_endpoint: f53c4fe3-1293-4baa-bdb0-118fab4e56ef

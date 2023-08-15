@@ -106,7 +106,7 @@ class PicoProbeMetadataFlowHandler(BaseFlowHandler):
             flow_input = self.create_flow_input(event.src_path)
 
             # Start the flow with the new file as input
-            self.start_flow(flow_input, run_label=f"TarAndTransfer {file.name}")
+            self.start_flow(flow_input, run_label=f"Hyperspectral {file.name}")
 
 
 if __name__ == "__main__":
