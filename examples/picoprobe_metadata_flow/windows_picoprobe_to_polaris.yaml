@@ -3,16 +3,22 @@
 # to test the ALCF PicoProbe connection
 
 # On PicoProbeUserDAComputer
+#local_globus_endpoint: 
+#  endpoint_id: 387aaf6e-3302-11ee-9200-5b20905a64b1
+#  rel_path: C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+#  abs_path: C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+
 local_globus_endpoint: 
   endpoint_id: 387aaf6e-3302-11ee-9200-5b20905a64b1
-  rel_path: Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+  rel_path: MicroscopeData\Brace\transfers
   abs_path: C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+
 
 # On Eagle@ALCF
 remote_globus_endpoint: 
   endpoint_id: 300ef593-e55e-4bc1-ab21-6d26d82c3b99
-  rel_path: PicoProbeTestEndpoint
-  abs_path: /lus/eagle/projects/APSDataAnalysis/PICOPROBE/PicoProbeTestEndpoint
+  rel_path: PicoProbeTestEndpoint/08-15-PicoProbeUser-test
+  abs_path: /lus/eagle/projects/APSDataAnalysis/PICOPROBE/PicoProbeTestEndpoint/08-15-PicoProbeUser-test
 
 # This funcX endpoint is on Polaris@ALCF
 remote_funcx_endpoint: f53c4fe3-1293-4baa-bdb0-118fab4e56ef
