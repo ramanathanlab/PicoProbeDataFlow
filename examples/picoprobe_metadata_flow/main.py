@@ -37,6 +37,7 @@ class PicoProbeFlowConfig(BaseModel):
     local_globus_endpoint: GlobusEndpoint
     remote_globus_endpoint: GlobusEndpoint
     remote_funcx_endpoint: str
+    remote_funcx_endpoint_non_compute: str
     globus_search_index: str
 
 
@@ -72,6 +73,7 @@ class PicoProbeMetadataFlowHandler(BaseFlowHandler):
                 # ============================
                 # Step 2-3. Gather metadata from the remote file, plot the hyperspectral image
                 # and publish the metadata to Globus Search
+                "funcx_endpoint_compute": self.config.remote_funcx_endpoint,
                 "funcx_endpoint_non_compute": self.config.remote_funcx_endpoint,
                 "publishv2": {
                     "dataset": remote_experiment_dir,

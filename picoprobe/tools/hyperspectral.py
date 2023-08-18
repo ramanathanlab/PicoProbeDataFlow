@@ -143,7 +143,7 @@ def hyperspectral_image_tool(**data):
     return final_data
 
 
-@generate_flow_definition
+@generate_flow_definition(modifiers={hyperspectral_image_tool: {"WaitTime": 28800}})
 class HyperspectralImageTool(GladierBaseTool):
     funcx_functions = [hyperspectral_image_tool]
     required_input = ["publishv2"]

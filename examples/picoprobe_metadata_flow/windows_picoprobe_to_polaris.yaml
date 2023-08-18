@@ -22,4 +22,5 @@ remote_globus_endpoint:
 
 # This funcX endpoint is on Polaris@ALCF
 remote_funcx_endpoint: f53c4fe3-1293-4baa-bdb0-118fab4e56ef
+remote_funcx_endpoint_non_compute: f53c4fe3-1293-4baa-bdb0-118fab4e56ef
 globus_search_index: 6077d057-989d-41e2-b60b-91fe001f0687
