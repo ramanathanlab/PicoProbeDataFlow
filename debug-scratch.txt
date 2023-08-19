@@ -41,3 +41,25 @@ Traceback (most recent call last):
   File "E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow\env\lib\site-packages\globus_sdk\client.py", line 319, in request
     raise self.error_class(r)
 globus_sdk.exc.api.GlobusAPIError: ('POST', 'https://flows.globus.org/flows', 'Bearer', 403, 'Error', 'FORBIDDEN')
+
+
+
+Tried adding these lines
+
+    # Instantiate the flow client
+    flow_client = PicoProbeTemporalImaging_v1()
+    flow_client.login()
+    print(flow_client.get_flow_id())
+    flow_client.register_flow()
+    flow_client.sync_flow()
+
+
+Getting this error:
+
+None
+Traceback (most recent call last):
+  File ".\examples\temporal_application\main.py", line 140, in <module>
+    flow_client.register_flow()
+AttributeError: 'PicoProbeTemporalImaging_v1' object has no attribute 'register_flow'
+
+
