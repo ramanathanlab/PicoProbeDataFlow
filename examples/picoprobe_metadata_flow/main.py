@@ -25,7 +25,7 @@ from picoprobe.utils import (
         },
     }
 )
-class PicoProbeMetadataFlow_Production_v1(GladierBaseClient):
+class PicoProbeMetadataFlow_Production_v2(GladierBaseClient):
     gladier_tools = [
         "gladier_tools.globus.Transfer",
         HyperspectralImageTool,
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     pprint(config)
 
     # Instantiate the flow client
-    flow_client = PicoProbeMetadataFlow_Production_v1()
+    flow_client = PicoProbeMetadataFlow_Production_v2()
 
     # Instantiate watcher which launches flows based on a flow handler
     checkpoint = CheckPoint(args.checkpoint_file)

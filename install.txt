@@ -66,5 +66,6 @@ cp '.\data\2023081040-700kx MultiFrams 991ms 600F Counting & FFI mode Falcon 700
 
 
 Production runs simulator:
+python -m picoprobe.simulator -i .\data\ -o C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers -g Velox*.emd -t 30
 python -m picoprobe.simulator -i .\data\ -o C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers -g 2023*.emd -t 180
 
