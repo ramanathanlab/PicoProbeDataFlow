@@ -20,7 +20,8 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 
 Create a virtual environment:
 C:\ProgramData\Miniconda3\python.exe -m venv env
-gi
+.\env\Scripts\activate
+
 
 Checking the python location should return the new Python in the env\Scripts folder:
 where.exe python
@@ -44,10 +45,26 @@ We will use this directory for our transfers:
 C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
 
 
-Run the program:
+=======================================
+
+Run the hyperspectral application:
 python .\examples\picoprobe_metadata_flow\main.py -c .\examples\picoprobe_metadata_flow\windows_picoprobe_to_polaris.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
 
 
 Open a separate powershell and copy the test files into the transfer directory:
 cd 'E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow\'
 cp .\data\VeloxTest-Membranes.emd C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+
+======================================
+
+Running the spatiotemporal application:
+python .\examples\temporal_application\main.py -c .\examples\temporal_application\windows_picoprobe_to_polaris_compute.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+
+Open a separate powershell and copy the test files into the transfer directory:
+cd 'E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow\'
+cp '.\data\2023081040-700kx MultiFrams 991ms 600F Counting & FFI mode Falcon 700 kx 1819.emd' C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+
+
+Production runs simulator:
+python -m picoprobe.simulator -i .\data\ -o C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers -g 2023*.emd -t 360
+

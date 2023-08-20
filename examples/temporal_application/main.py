@@ -26,7 +26,7 @@ from picoprobe.utils import (
         },
     },
 )
-class PicoProbeTemporalImaging_v1(GladierBaseClient):
+class PicoProbeTemporalImaging_Production_v1(GladierBaseClient):
     gladier_tools = [
         "gladier_tools.globus.Transfer",
         TemporalImageTool,
@@ -134,7 +134,10 @@ if __name__ == "__main__":
     pprint(config)
 
     # Instantiate the flow client
-    flow_client = PicoProbeTemporalImaging_v1()
+    flow_client = PicoProbeTemporalImaging_Production_v1()
+    #flow_client.login()
+    #print(flow_client.get_flow_id())
+    #flow_client.sync_flow()
 
     # Instantiate watcher which launches flows based on a flow handler
     checkpoint = CheckPoint(args.checkpoint_file)
