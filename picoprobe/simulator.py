@@ -36,3 +36,6 @@ if __name__ == "__main__":
 
         # Sleep between each transfer to simulate the incoming data rate
         time.sleep(args.time)
+
+        # Clean up old data (to avoid running out of storage)
+        dst_file.unlink()
