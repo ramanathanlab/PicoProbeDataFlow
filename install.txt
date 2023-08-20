@@ -69,3 +69,62 @@ Production runs simulator:
 python -m picoprobe.simulator -i .\data\ -o C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers -g Velox*.emd -t 30
 python -m picoprobe.simulator -i .\data\ -o C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers -g 2023*.emd -t 180
 
+Analyzing results:
+C:\ProgramData\Miniconda3\python.exe -m venv pandas-env
+.\pandas-env\Scripts\activate
+pip install -U setuptools wheel
+python -m pip install --upgrade pip
+pip install -r .\requirements\windows_requirements.txt
+pip install -e .
+pip install pandas
+
+
+# PicoProbeTemporalImaging_Production_v2 flow
+python -m picoprobe.flow_analyzer -i 49af5d02-6d4d-4bf9-9666-813a9f2e106f -l 100
+
+
+0895a642-5eda-4a62-9d4a-c1372a544043
+764dba1a-cded-41d8-b766-d6232b0d3404
+03e49b55-6620-48ed-bc98-b32d9a532c00
+3d058bb2-f7c3-4af3-9ce8-f7de0bb5cc43
+c12f06be-7a0e-42df-9bef-0fe24a32dbbf
+44adc0a1-3d03-4620-b953-55f600c52fc2
+0ef6f15e-94ae-4166-aedb-f0eac28ed962
+dc1d7031-7ba1-445e-8bc2-3039e89a29b8
+dc06cf50-13e3-4720-9632-eec3cfd30be3
+acecc1d2-d007-410f-a3b4-ed39ee113dea
+139d3b97-28c8-434b-893a-c082c455ee62
+9bdaa0fc-d3dd-409d-8c07-85130505ba61
+53b241dd-5099-49cc-9acd-d152782f7540
+8907cb91-9357-4387-9ee4-cea87bf600ad
+d20a51f0-70a4-4295-bc77-697a2253294a
+10bfbe08-c6e4-4d6e-b65c-224e2122e84c
+8510d022-5353-4f2c-a817-bb026b0a5f74
+595c67d7-f258-49a4-ba65-7307c58320c6
+Found 18 flow runs.
+Loaded 18 runs.
+Flow:    mean 224s, min 195s, max 274s
+Transfer:        mean 142s, median 140s, std 8s, min 133s, max 163s
+TemporalImageTool:       mean 52s, median 47s, std 14s, min 36s, max 93s
+Publishv2GatherMetadata:         mean 20s, median 18s, std 6s, min 11s, max 35s
+Publishv2Ingest:         mean 7s, median 5s, std 4s, min 4s, max 22s
+Bytes Transferred:       mean 1.206GB, Total 21.716GB
+funcX Time:      mean 72s, Total 1305s
+
+
+# PicoProbeMetadataFlow_Production_v2 flow
+python -m picoprobe.flow_analyzer -i 212281ff-acf8-4361-b209-4c13dd369cc6 -l 100
+
+520d8c78-63dc-439f-a9b5-a2e804b2dc2e
+8a8a064c-3d72-49ca-aebc-877544b5a65d
+09a66bab-6989-4b8a-b051-cd479d026ec7
+Found 3 flow runs.
+Loaded 3 runs.
+Flow:    mean 37s, min 36s, max 39s
+Transfer:        mean 16s, median 15s, std 3s, min 13s, max 20s
+HyperspectralImageTool:  mean 6s, median 4s, std 2s, min 4s, max 8s
+Publishv2GatherMetadata:         mean 8s, median 9s, std 4s, min 3s, max 13s
+Publishv2Ingest:         mean 5s, median 4s, std 0s, min 4s, max 5s
+Bytes Transferred:       mean 0.089GB, Total 0.268GB
+funcX Time:      mean 15s, Total 45s
+
