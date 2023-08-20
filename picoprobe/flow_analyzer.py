@@ -436,6 +436,9 @@ if __name__ == "__main__":
     arg_parser.add_argument(
         "-i", "--flow_id", type=str, required=True, help="The flow ID."
     )
+    arg_parser.add_argument(
+        "-l", "--limit", type=int, default=10, help="Number of flows to analyze."
+    )
     args = arg_parser.parse_args()
 
     # flow_id = "f892099b-39f5-4aa7-afc6-48c037664d03"
@@ -443,7 +446,7 @@ if __name__ == "__main__":
     print(flow_scope)
 
     fi = FlowInfo()
-    fi.load(args.flow_id, flow_scope, limit=10)
+    fi.load(args.flow_id, flow_scope, limit=args.limit)
 
     fi.describe_runtimes()
     fi.describe_usage()
