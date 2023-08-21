@@ -362,6 +362,7 @@ class FlowInfo:
         plt.tick_params(
             axis="both", which="major", pad=-1, labelsize=18, labelcolor="black"
         )
+        plt.savefig(f"histogram_{self.flow_id}.pdf", dpi=600, bbox_inches="tight")
 
     def plot_gantt(self, limit=None, show_relative_time=True):
         """Plot a Gantt Chart of flow runs.
@@ -370,7 +371,6 @@ class FlowInfo:
             limit (str, optional): The number of most recent flows to plot
             show_relative_time (bool, optional): show relative time on x axis. Default: True
         """
-        import numpy as np
         import matplotlib.pyplot as plt
         import seaborn as sns
 
@@ -428,6 +428,7 @@ class FlowInfo:
         gnt.tick_params(
             axis="both", which="major", pad=-1, labelsize=25, labelcolor="black"
         )
+        plt.savefig(f"gannt_{self.flow_id}.pdf", dpi=600, bbox_inches="tight")
 
 
 if __name__ == "__main__":
