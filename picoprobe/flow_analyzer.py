@@ -1,7 +1,18 @@
+import pickle
 import pandas as pd
 from dateutil import parser
 from argparse import ArgumentParser
 from globus_automate_client import create_flows_client
+
+
+class FlowInfoDataClass:
+    def __init__(self):
+        self.flow_id = None
+        self.flow_scope = None
+        self.flow_runs = []
+        self.flow_order = []
+        self.flow_logs = {}
+        self.action_logs = {}
 
 
 class FlowInfo:
@@ -9,11 +20,12 @@ class FlowInfo:
 
     def __init__(self):
         self.fc = create_flows_client()
-        self.flow_id = None
-        self.flow_scope = None
-        self.flow_runs = []
-        self.flow_logs = {}
-        self.action_logs = None
+        self.data = FlowInfoDataClass()
+        # self.flow_id = None
+        # self.flow_scope = None
+        # self.flow_runs = []
+        # self.flow_logs = {}
+        # self.action_logs = None
 
     def load(self, flow_id, flow_scope, limit=100):
         """Load a flow's executions
@@ -23,23 +35,23 @@ class FlowInfo:
             flow_scope (str): The globus scope of the flow
             limit (int, optional): The number of flow actions to load. Defaults 100.
         """
-        self.flow_id = flow_id
-        self.flow_scope = flow_scope
-        self.flow_runs = []
-        self.flow_order = []
-        self.action_logs = {}
+        self.data.flow_id = flow_id
+        self.data.flow_scope = flow_scope
+        self.data.flow_runs = []
+        self.data.flow_order = []
+        self.data.action_logs = {}
 
-        self.flow_runs = self.get_flow_runs(self.flow_id, limit)
-        for fr in self.flow_runs:
+        self.data.flow_runs = self.get_flow_runs(self.data.flow_id, limit)
+        for fr in self.data.flow_runs:
             print(fr["run_id"])
-        print(f"Found {len(self.flow_runs)} flow runs.")
+        print(f"Found {len(self.data.flow_runs)} flow runs.")
 
-        self.step_types = self._get_step_types(self.flow_id)
+        self.step_types = self._get_step_types(self.data.flow_id)
 
-        self.flow_logs, self.action_logs = self._extract_times(
-            flow_id, flow_scope, self.flow_runs
+        self.flow_logs, self.data.action_logs = self._extract_times(
+            flow_id, flow_scope, self.data.flow_runs
         )
-        print(f"Loaded {len(self.flow_runs)} runs.")
+        print(f"Loaded {len(self.data.flow_runs)} runs.")
 
     def _get_step_types(self, flow_id):
         """Get the type associated with each step.
@@ -112,7 +124,7 @@ class FlowInfo:
             f"max {int(self.flow_logs['flow_runtime'].max())}s"
         )
 
-        for step in self.flow_order:
+        for step in self.data.flow_order:
             c = f"{step}_runtime"
             print(
                 f"{step}:\t mean {int(self.flow_logs[c].mean())}s, "
@@ -166,7 +178,7 @@ class FlowInfo:
 
             # Get step timing info. this gives a _runtime field for each step
             flow_steps, flow_order = self._extract_step_times(flow_logs)
-            self.flow_order = flow_order
+            self.data.flow_order = flow_order
             flow_res.update(flow_steps)
 
             # Pull out bytes transferred from any Transfer steps
@@ -362,7 +374,7 @@ class FlowInfo:
         plt.tick_params(
             axis="both", which="major", pad=-1, labelsize=18, labelcolor="black"
         )
-        plt.savefig(f"histogram_{self.flow_id}.pdf", dpi=600, bbox_inches="tight")
+        plt.savefig(f"histogram_{self.data.flow_id}.pdf", dpi=600, bbox_inches="tight")
 
     def plot_gantt(self, limit=None, show_relative_time=True):
         """Plot a Gantt Chart of flow runs.
@@ -404,7 +416,7 @@ class FlowInfo:
 
         for i, task in tasks.iterrows():
             # flow_start = task['start']
-            for j, step in enumerate(self.flow_order):
+            for j, step in enumerate(self.data.flow_order):
                 step_start, step_end = (
                     task[f"{step}_start"],
                     task[f"{step}_end"] - task[f"{step}_start"],
@@ -419,7 +431,7 @@ class FlowInfo:
                 )
             flow_end = task["end"] - task[f"{step}_end"]
         gnt.legend(
-            self.flow_order,
+            self.data.flow_order,
             #'Flow finishing'],
             fontsize=25,
             loc="upper left",
@@ -429,7 +441,7 @@ class FlowInfo:
         gnt.tick_params(
             axis="both", which="major", pad=-1, labelsize=25, labelcolor="black"
         )
-        plt.savefig(f"gannt_{self.flow_id}.pdf", dpi=600, bbox_inches="tight")
+        plt.savefig(f"gannt_{self.data.flow_id}.pdf", dpi=600, bbox_inches="tight")
 
 
 if __name__ == "__main__":
@@ -454,4 +466,7 @@ if __name__ == "__main__":
     fi.describe_usage()
 
     fi.plot_histogram()
-    fi.plot_gantt()
+    # fi.plot_gantt()
+
+    with open(f"performance_{args.flow_id}.pkl", "wb") as f:
+        pickle.dump(fi.data, f)
