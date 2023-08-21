@@ -451,3 +451,6 @@ if __name__ == "__main__":
 
     fi.describe_runtimes()
     fi.describe_usage()
+
+    fi.plot_histogram()
+    fi.plot_gantt()
