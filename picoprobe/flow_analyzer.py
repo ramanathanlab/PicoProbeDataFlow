@@ -373,6 +373,7 @@ class FlowInfo:
         """
         import matplotlib.pyplot as plt
         import seaborn as sns
+        import numpy as np
 
         sns.set(style="white", palette="Set2", color_codes=False)
         sns.set_style("ticks")
@@ -392,7 +393,7 @@ class FlowInfo:
             start = tasks["start"].min()
             for c in convert_columns:
                 if "_runtime" not in c:
-                    tasks[c] = tasks[c] - start
+                    tasks[c] = list(np.array(tasks[c]) - start)
 
         # Plot from dataframe
         fig, gnt = plt.subplots(figsize=(12, 9))
