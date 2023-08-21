@@ -17,8 +17,8 @@ local_globus_endpoint:
 # On Eagle@ALCF
 remote_globus_endpoint: 
   endpoint_id: 300ef593-e55e-4bc1-ab21-6d26d82c3b99
-  rel_path: PicoProbeTestEndpoint/08-20-PicoProbeUser-hyperspectral-prod-v2
-  abs_path: /lus/eagle/projects/APSDataAnalysis/PICOPROBE/PicoProbeTestEndpoint/08-20-PicoProbeUser-hyperspectral-prod-v2
+  rel_path: PicoProbeTestEndpoint/08-21-PicoProbeUser-hyperspectral-prod-v5
+  abs_path: /lus/eagle/projects/APSDataAnalysis/PICOPROBE/PicoProbeTestEndpoint/08-21-PicoProbeUser-hyperspectral-prod-v5
 
 # This funcX endpoint is on Polaris@ALCF
 remote_funcx_endpoint: d8e16504-eaab-44b6-aa56-ff7d1b6040a3
