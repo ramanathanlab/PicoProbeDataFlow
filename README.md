@@ -147,7 +147,11 @@ globus-search index --help
 globus-search login
 globus-search index list
 globus-search index create picoprobe_test picoprobe_testing
-globus-search index show 06625170-a9ee-4d68-b8dc-2480c9407966
+globus-search index show [search-index-uuid]
+```
+Now give Globus group members permission to write to the search index:
+```bash
+globus-search index role create --type group [search-index-uuid] writer [group-uuid]
 ```
 
 ### Configure a Globus Compute Endpoint
