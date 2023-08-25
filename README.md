@@ -1,7 +1,8 @@
 # PicoProbeDataFlow
 Data flow infrastructure for Argonne National Laboratory PicoProbe project.
 
-![PicoProbe Data Flow](examples/xloop2023/figures/overview.pdf)
+
+![overview](https://github.com/ramanathanlab/PicoProbeDataFlow/assets/38300604/046dc3cd-03aa-4652-976d-7ea7d8b3c6e2)
 
 ## Dataset
 - The datasets used in this study can be downloaded here: https://zenodo.org/record/8284219
