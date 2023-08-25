@@ -1,12 +1,8 @@
 # PicoProbeDataFlow
-Data pipeline infrastructure for ANL PicoProbe project
+Data flow infrastructure for Argonne National Laboratory PicoProbe project.
 
-See `examples/` folder for specific ussage.
-
-## Development
-
-### Installation
-Pip Locally:
+## Installation
+On macOS, Linux:
 ```
 python3 -m venv env
 source env/bin/activate
@@ -16,17 +12,7 @@ pip3 install -r requirements/requirements.txt
 pip3 install -e .
 ```
 
-Conda Locally: 
-```
-conda create -p ./conda-env python=3.9 
-conda activate ./conda-env
-pip install -U pip setuptools wheel
-pip install -r requirements/dev.txt
-pip install -r requirements/requirements.txt
-pip install -e .
-```
-
-To run dev tools (flake8, black, mypy): `make`
+On Windows, see `docs/windows_setup.md`.
 
 ### Setup a Globus Shared Endpoint on Eagle
 This enables Globus transfers (and Compute) read/write access for the PicoProbe data directory on Eagle:
@@ -65,20 +51,6 @@ globus-compute-endpoint list
 ```
 
 ### Setup a Globus Compute endpoint on a Polaris compute node
-```bash
-qsub -I -l select=1 -l walltime=1:00:00 -A RL-fold -q debug -l filesystems=home:eagle
-module load conda/2023-01-10-unstable
-conda activate
-conda create -n picoprobe-compute --clone base
-conda activate picoprobe-compute
-git clone https://github.com/ramanathanlab/PicoProbeDataFlow.git
-cd PicoProbeDataFlow
-pip install -U pip setuptools wheel
-pip install -r requirements/requirements.txt
-pip install -e .
-```
-
-Attempt 2:
 ```bash
 qsub -I -l select=1 -l walltime=1:00:00 -A RL-fold -q debug -l filesystems=home:eagle
 module load conda/2023-01-10-unstable
@@ -151,10 +123,10 @@ globus-search index show [search-index-uuid]
 ```
 Now give Globus group members permission to write to the search index:
 ```bash
-globus-search index role create --type group [search-index-uuid] writer [group-uuid]
+globus-search index role create --type group <search-index-uuid> writer <group-uuid>
 ```
 
-### Configure a Globus Compute Endpoint
+### Configure a Globus Compute Endpoint Locally
 ```bash
 globus-compute-endpoint list
 globus-compute-endpoint start AlexsMacBookPro-06-2023
@@ -162,23 +134,12 @@ globus-compute-endpoint start AlexsMacBookPro-06-2023
 **Note**: Replace `AlexsMacBookPro-06-2023` with the name of your endpoint.
 
 ## Usage
-To start the `tar_and_transfer` flow,
-- First start the `globus-compute-endpoint`.
-- Then, make sure your globus endpoints are activated.
-```bash
-source examples/tar_and_transfer/env.sh
-python  examples/tar_and_transfer/main.py -l ~/GlobusEndpoint/transfer-flow-test-send
-```
+Please follow the instructions in `docs/windows_setup.md`. 
 
-To start the `picoprobe_metadata_flow` flow,
-```bash
-source examples/picoprobe_metadata_flow/env.sh
-python  examples/picoprobe_metadata_flow/main.py -l ~/GlobusEndpoint/transfer-flow-test-send
-```
+**Note**: The Windows-specific commands can be ignored if you are running on a different system.
 
-### Configuring Windows10
-To setup the watcher application on a Windows10 machine, follow the steps in `docs/windows_setup.md`
+We also provide instructions to generate flow runtime statistics in `docs/windows_setup.md`.
 
 ## Django Globus Portal Framework (DGPF) Data Portal
-We provide an interactive vizualization of our experimental results using the source code at [this](https://github.com/ramanathanlab/picoprobe-portal/tree/main) repository.
+We provide an interactive visualization of our experimental results using the source code at [this](https://github.com/ramanathanlab/picoprobe-portal/tree/main) repository.
 
