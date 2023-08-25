@@ -1,6 +1,8 @@
 # PicoProbeDataFlow
 Data flow infrastructure for Argonne National Laboratory PicoProbe project.
 
+[PicoProbe Data Flow](examples/xloop2023/figures/overview.pdf)
+
 ## Dataset
 - The datasets used in this study can be downloaded here: https://zenodo.org/record/8284219
 - The machine learning nanoparticle prediciton dataset: https://app.roboflow.com/picoprobe/nanoparticle-detection/1
