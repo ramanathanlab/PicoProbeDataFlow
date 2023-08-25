@@ -1,6 +1,10 @@
 # PicoProbeDataFlow
 Data flow infrastructure for Argonne National Laboratory PicoProbe project.
 
+## Dataset
+- The datasets used in this study can be downloaded here: https://zenodo.org/record/8284219
+- The machine learning nanoparticle prediciton dataset: https://app.roboflow.com/picoprobe/nanoparticle-detection/1
+
 ## Installation
 On macOS, Linux:
 ```
@@ -139,6 +143,11 @@ Please follow the instructions in `docs/windows_setup.md`.
 **Note**: The Windows-specific commands can be ignored if you are running on a different system.
 
 We also provide instructions to generate flow runtime statistics in `docs/windows_setup.md`.
+
+## Training the Machine Learning Model
+The easiest way to reproduce the nanoparticle detection model is to make an accont on [Roboflow](https://roboflow.com/) and then run our notebook in Google Colab: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ramanathanlab/PicoProbeDataFlow/blob/main/examples/xloop2023/machine_learning/train_yolov8_object_detection_on_custom_dataset.ipynb)
+
+**Note**: Make sure to add your Roboflow API key on the code cell with the `YOUR_API_KEY` placeholder.
 
 ## Django Globus Portal Framework (DGPF) Data Portal
 We provide an interactive visualization of our experimental results using the source code at [this](https://github.com/ramanathanlab/picoprobe-portal/tree/main) repository.

@@ -116,12 +116,12 @@ If the above examples worked, then you can now use a `simulator` program that pe
 
 The settings we used for the `Hyperspectral Imaging` production run:
 ```console
-python -m picoprobe.simulator -i .\data\ -o C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers -g Velox*.emd -t 30
+python -m picoprobe.simulator -i .\data\hyperspectral -o C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers -g Velox*.emd -t 30
 ```
 
 The settings we used for the `Spatiotemporal Imaging` production run:
 ```console
-python -m picoprobe.simulator -i .\data\ -o C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers -g 2023*.emd -t 180
+python -m picoprobe.simulator -i .\data\spatiotemporal -o C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers -g 2023*.emd -t 180
 ```
 
 # Analyzing flow performance results
