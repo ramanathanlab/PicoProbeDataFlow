@@ -1,120 +1,156 @@
+# Install flow infrastructure on Windows 10
+These instructions follow the particular paths used on the PicoProbe user computer to provide a concrete example. 
 
-Install git:
-https://git-scm.com/download/win
+**Please update the paths to your own system.**
 
-Open Windows PowerShell and navigate to the software folder
+1. Install git: https://git-scm.com/download/win
+
+2. Open Windows PowerShell and navigate to the software folder
+```bash
 cd 'E:\PicoProbe User Local Data\Brace\software'
-
-The version of Python we are using:
-
+```
+3. Identify the correct Python to use (preferably 3.9 or later)
+```bash
+where.exe python
+```
+Which outputs:
+```console
 C:\ProgramData\Miniconda3\python.exe
+```
 
-Install the source code:
+4. Install the source code
+```
 git clone https://github.com/ramanathanlab/PicoProbeDataFlow.git
 cd .\PicoProbeDataFlow\
+```
 
-Enable the ability to run scripts from powershell
-For more information: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-7.3
+5. Enable the ability to run scripts from PowerShell. See [here](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-7.3) for more information.
 
+This command should be run each time a new PowerShell session is opened if you need to use the session to activate a Python virtual environment:
+```bash
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+```
 
-Create a virtual environment:
+6. Create a virtual environment:
+```bash
 C:\ProgramData\Miniconda3\python.exe -m venv env
 .\env\Scripts\activate
+```
 
-
-Checking the python location should return the new Python in the env\Scripts folder:
+7. Checking the python and pip locations should return the new executables in the env\Scripts folder:
+```bash
 where.exe python
-E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow\env\Scripts\python.exe
-
-The same holds for pip:
 where.exe pip
+```
+Which outputs
+```console
+E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow\env\Scripts\python.exe
 E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow\env\Scripts\pip.exe
+```
 
-
-Install the package:
+8. Install the package:
+```bash
 pip install -U setuptools wheel
 python -m pip install --upgrade pip
 pip install -r .\requirements\windows_requirements.txt
 pip install -e .
+```
 
+9. Setup the transfer directory using [Globus Connect Personal](https://www.globus.org/globus-connect-personal):
 
-The GlobusEndpoint configured on the User machine is rooted at C:\
+The GlobusEndpoint configured on the User machine is rooted at `C:\`
 
 We will use this directory for our transfers:
+```console
 C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+```
 
+Now we have all the software installed.
 
-=======================================
+# Running a Flow
+
+Make sure to activate your virtual environment (for each PowerShell session you open) by running:
+```bash
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+cd 'E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow'
+.\env\Scripts\activate
+```
+
+## Hyperspectral Imaging Flow
 
 Run the hyperspectral application:
+```console
 python .\examples\picoprobe_metadata_flow\main.py -c .\examples\picoprobe_metadata_flow\config\windows_picoprobe_to_polaris.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+```
 
+Okay, now a program is running that is watching the `C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers` directory
+for new EMD files to appear. When they appear, it will automatically start a new flow.
 
-Open a separate powershell and copy the test files into the transfer directory:
+Open a separate PowerShell and copy the test files into the transfer directory:
+```console
 cd 'E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow\'
 cp .\data\VeloxTest-Membranes.emd C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+```
 
-======================================
+You should see a log message appear in the original PowerShell session that is running the watcher. You may need to authenticate Gladier by following the pop-up menu in the browser.
+
+## Spatiotemporal Imaging Flow
 
 Running the spatiotemporal application:
+```console
 python .\examples\temporal_application\main.py -c .\examples\temporal_application\config\windows_picoprobe_to_polaris_compute.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+```
 
-Open a separate powershell and copy the test files into the transfer directory:
+Okay, now a program is running that is watching the `C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers` directory
+for new EMD files to appear. When they appear, it will automatically start a new flow.
+
+Open a separate PowerShell and copy the test files into the transfer directory:
+```console
 cd 'E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow\'
 cp '.\data\2023081040-700kx MultiFrams 991ms 600F Counting & FFI mode Falcon 700 kx 1819.emd' C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+```
 
+## Using a simulator to start many flows automatically
 
-Production runs simulator:
+If the above examples worked, then you can now use a `simulator` program that periodically copies the files to the the transfer directory automatically.
+
+The settings we used for the `Hyperspectral Imaging` production run:
+```console
 python -m picoprobe.simulator -i .\data\ -o C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers -g Velox*.emd -t 30
+```
+
+The settings we used for the `Spatiotemporal Imaging` production run:
+```console
 python -m picoprobe.simulator -i .\data\ -o C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers -g 2023*.emd -t 180
+```
 
-Analyzing results:
-C:\ProgramData\Miniconda3\python.exe -m venv pandas-env
-.\pandas-env\Scripts\activate
-pip install -U setuptools wheel
-python -m pip install --upgrade pip
-pip install -r .\requirements\windows_requirements.txt
-pip install -e .
+# Analyzing flow performance results
+
+Follow these instructions to pull logs from Globus containing flow runtime statistics. You will need to use your own flow UUIDs, otherwise, Globus will return a `404 Not Found` error if you are not authenticated. Running the `picoprobe.flow_analyzer` will also output a `performance_<UUID>.pkl` file which can be used to recreate our performance figures in the paper.
+
+Make sure to activate your virtual environment by running:
+```bash
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+cd 'E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow'
+.\env\Scripts\activate
+```
+
+We will also need the `pandas` package:
+```bash
 pip install pandas
+```
 
+## Hyperspectral Imaging Flow
+The name of the flow used for our production run: `PicoProbeMetadataFlow_Production_v2`
+The flow UUID: `58175c8f-e94d-4f7e-b272-aff116bf86b3`
 
-# PicoProbeTemporalImaging_Production_v2 flow
-python -m picoprobe.flow_analyzer -i 49af5d02-6d4d-4bf9-9666-813a9f2e106f -l 200
-
-https://auth.globus.org/scopes/49af5d02-6d4d-4bf9-9666-813a9f2e106f/flow_49af5d02_6d4d_4bf9_9666_813a9f2e106f_user
-0895a642-5eda-4a62-9d4a-c1372a544043
-764dba1a-cded-41d8-b766-d6232b0d3404
-03e49b55-6620-48ed-bc98-b32d9a532c00
-3d058bb2-f7c3-4af3-9ce8-f7de0bb5cc43
-c12f06be-7a0e-42df-9bef-0fe24a32dbbf
-44adc0a1-3d03-4620-b953-55f600c52fc2
-0ef6f15e-94ae-4166-aedb-f0eac28ed962
-dc1d7031-7ba1-445e-8bc2-3039e89a29b8
-dc06cf50-13e3-4720-9632-eec3cfd30be3
-acecc1d2-d007-410f-a3b4-ed39ee113dea
-139d3b97-28c8-434b-893a-c082c455ee62
-9bdaa0fc-d3dd-409d-8c07-85130505ba61
-53b241dd-5099-49cc-9acd-d152782f7540
-8907cb91-9357-4387-9ee4-cea87bf600ad
-d20a51f0-70a4-4295-bc77-697a2253294a
-10bfbe08-c6e4-4d6e-b65c-224e2122e84c
-8510d022-5353-4f2c-a817-bb026b0a5f74
-595c67d7-f258-49a4-ba65-7307c58320c6
-Found 18 flow runs.
-Loaded 18 runs.
-Flow:    mean 224s, min 195s, max 274s
-Transfer:        mean 142s, median 140s, std 8s, min 133s, max 163s
-TemporalImageTool:       mean 52s, median 47s, std 14s, min 36s, max 93s
-Publishv2GatherMetadata:         mean 20s, median 18s, std 6s, min 11s, max 35s
-Publishv2Ingest:         mean 7s, median 5s, std 4s, min 4s, max 22s
-Bytes Transferred:       mean 1.206GB, Total 21.716GB
-funcX Time:      mean 72s, Total 1305s
-
-
-# PicoProbeMetadataFlow_Production_v2 flow
+This command pulls logs from Globus containing flow runtime statistics:
+```console
 python -m picoprobe.flow_analyzer -i 58175c8f-e94d-4f7e-b272-aff116bf86b3 -l 200
+```
 
+The output:
+```bash
 https://auth.globus.org/scopes/58175c8f-e94d-4f7e-b272-aff116bf86b3/flow_58175c8f_e94d_4f7e_b272_aff116bf86b3_user
 Getting more runs
 Getting more runs
@@ -202,4 +238,46 @@ Publishv2GatherMetadata:         mean 6s, median 5s, std 2s, min 3s, max 14s
 Publishv2Ingest:         mean 6s, median 5s, std 2s, min 4s, max 16s
 Bytes Transferred:       mean 0.089GB, Total 6.424GB
 funcX Time:      mean 20s, Total 1444s
+```
 
+
+## Spatiotemporal Imaging Flow
+The name of the flow used for our production run: `PicoProbeTemporalImaging_Production_v2`
+The flow UUID: `49af5d02-6d4d-4bf9-9666-813a9f2e106f`
+
+This command pulls logs from Globus containing flow runtime statistics:
+```console
+python -m picoprobe.flow_analyzer -i 49af5d02-6d4d-4bf9-9666-813a9f2e106f -l 200
+```
+
+The output:
+```bash
+https://auth.globus.org/scopes/49af5d02-6d4d-4bf9-9666-813a9f2e106f/flow_49af5d02_6d4d_4bf9_9666_813a9f2e106f_user
+0895a642-5eda-4a62-9d4a-c1372a544043
+764dba1a-cded-41d8-b766-d6232b0d3404
+03e49b55-6620-48ed-bc98-b32d9a532c00
+3d058bb2-f7c3-4af3-9ce8-f7de0bb5cc43
+c12f06be-7a0e-42df-9bef-0fe24a32dbbf
+44adc0a1-3d03-4620-b953-55f600c52fc2
+0ef6f15e-94ae-4166-aedb-f0eac28ed962
+dc1d7031-7ba1-445e-8bc2-3039e89a29b8
+dc06cf50-13e3-4720-9632-eec3cfd30be3
+acecc1d2-d007-410f-a3b4-ed39ee113dea
+139d3b97-28c8-434b-893a-c082c455ee62
+9bdaa0fc-d3dd-409d-8c07-85130505ba61
+53b241dd-5099-49cc-9acd-d152782f7540
+8907cb91-9357-4387-9ee4-cea87bf600ad
+d20a51f0-70a4-4295-bc77-697a2253294a
+10bfbe08-c6e4-4d6e-b65c-224e2122e84c
+8510d022-5353-4f2c-a817-bb026b0a5f74
+595c67d7-f258-49a4-ba65-7307c58320c6
+Found 18 flow runs.
+Loaded 18 runs.
+Flow:    mean 224s, min 195s, max 274s
+Transfer:        mean 142s, median 140s, std 8s, min 133s, max 163s
+TemporalImageTool:       mean 52s, median 47s, std 14s, min 36s, max 93s
+Publishv2GatherMetadata:         mean 20s, median 18s, std 6s, min 11s, max 35s
+Publishv2Ingest:         mean 7s, median 5s, std 4s, min 4s, max 22s
+Bytes Transferred:       mean 1.206GB, Total 21.716GB
+funcX Time:      mean 72s, Total 1305s
+```
