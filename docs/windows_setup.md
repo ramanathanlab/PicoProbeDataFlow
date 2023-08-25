@@ -141,8 +141,8 @@ pip install pandas
 ```
 
 ## Hyperspectral Imaging Flow
-The name of the flow used for our production run: `PicoProbeMetadataFlow_Production_v2`
-The flow UUID: `58175c8f-e94d-4f7e-b272-aff116bf86b3`
+- The name of the flow used for our production run: `PicoProbeMetadataFlow_Production_v2`
+- The flow UUID: `58175c8f-e94d-4f7e-b272-aff116bf86b3`
 
 This command pulls logs from Globus containing flow runtime statistics:
 ```console
@@ -242,8 +242,8 @@ funcX Time:      mean 20s, Total 1444s
 
 
 ## Spatiotemporal Imaging Flow
-The name of the flow used for our production run: `PicoProbeTemporalImaging_Production_v2`
-The flow UUID: `49af5d02-6d4d-4bf9-9666-813a9f2e106f`
+- The name of the flow used for our production run: `PicoProbeTemporalImaging_Production_v2`
+- The flow UUID: `49af5d02-6d4d-4bf9-9666-813a9f2e106f`
 
 This command pulls logs from Globus containing flow runtime statistics:
 ```console
