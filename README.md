@@ -5,6 +5,11 @@ Data flow infrastructure for Argonne National Laboratory PicoProbe project.
 - The datasets used in this study can be downloaded here: https://zenodo.org/record/8284219
 - The machine learning nanoparticle prediciton dataset: https://app.roboflow.com/picoprobe/nanoparticle-detection/1
 
+For convenience, here is a command to download the zenodo dataset. It is a 1.32 GB tarball:
+```bash
+wget https://zenodo.org/record/8284219/files/data.tar.gz
+```
+
 ## Installation
 On macOS, Linux:
 ```
