@@ -135,9 +135,6 @@ if __name__ == "__main__":
 
     # Instantiate the flow client
     flow_client = PicoProbeTemporalImaging_Production_v2()
-    #flow_client.login()
-    #print(flow_client.get_flow_id())
-    #flow_client.sync_flow()
 
     # Instantiate watcher which launches flows based on a flow handler
     checkpoint = CheckPoint(args.checkpoint_file)
