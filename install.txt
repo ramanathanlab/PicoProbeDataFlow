@@ -48,7 +48,7 @@ C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
 =======================================
 
 Run the hyperspectral application:
-python .\examples\picoprobe_metadata_flow\main.py -c .\examples\picoprobe_metadata_flow\windows_picoprobe_to_polaris.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+python .\examples\picoprobe_metadata_flow\main.py -c .\examples\picoprobe_metadata_flow\config\windows_picoprobe_to_polaris.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
 
 
 Open a separate powershell and copy the test files into the transfer directory:
@@ -58,7 +58,7 @@ cp .\data\VeloxTest-Membranes.emd C:\Users\PicoProbeUser\Documents\MicroscopeDat
 ======================================
 
 Running the spatiotemporal application:
-python .\examples\temporal_application\main.py -c .\examples\temporal_application\windows_picoprobe_to_polaris_compute.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+python .\examples\temporal_application\main.py -c .\examples\temporal_application\config\windows_picoprobe_to_polaris_compute.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
 
 Open a separate powershell and copy the test files into the transfer directory:
 cd 'E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow\'
