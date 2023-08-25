@@ -149,6 +149,8 @@ The easiest way to reproduce the nanoparticle detection model is to make an acco
 
 **Note**: Make sure to add your Roboflow API key on the code cell with the `YOUR_API_KEY` placeholder.
 
+If you are interested in buidling the dataset manually, please see `examples/xloop2023/machine_learning/build_yolov8_dataset.ipynb` for how to convert the EMD data files to PNG images for YOLOv8 compatibilty.
+
 ## Django Globus Portal Framework (DGPF) Data Portal
 We provide an interactive visualization of our experimental results using the source code at [this](https://github.com/ramanathanlab/picoprobe-portal/tree/main) repository.
 
