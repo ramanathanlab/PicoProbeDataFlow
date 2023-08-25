@@ -80,7 +80,7 @@ cd 'E:\PicoProbe User Local Data\Brace\software\PicoProbeDataFlow'
 
 Run the hyperspectral application:
 ```console
-python .\examples\picoprobe_metadata_flow\main.py -c .\examples\picoprobe_metadata_flow\config\windows_picoprobe_to_polaris.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+python .\examples\hyperspectral_flow\main.py -c .\examples\hyperspectral_flow\config\windows_picoprobe_to_polaris.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
 ```
 
 Okay, now a program is running that is watching the `C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers` directory
@@ -98,7 +98,7 @@ You should see a log message appear in the original PowerShell session that is r
 
 Running the spatiotemporal application:
 ```console
-python .\examples\temporal_application\main.py -c .\examples\temporal_application\config\windows_picoprobe_to_polaris_compute.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
+python .\examples\spatiotemporal_flow\main.py -c .\examples\spatiotemporal_flow\config\windows_picoprobe_to_polaris_compute.yaml -l C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers
 ```
 
 Okay, now a program is running that is watching the `C:\Users\PicoProbeUser\Documents\MicroscopeData\Brace\transfers` directory
