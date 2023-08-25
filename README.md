@@ -1,5 +1,5 @@
 # PicoProbeDataFlow
-Data flow infrastructure for Argonne National Laboratory PicoProbe project.
+Data flow infrastructure for Argonne National Laboratory PicoProbe.
 
 
 ![overview](https://github.com/ramanathanlab/PicoProbeDataFlow/assets/38300604/046dc3cd-03aa-4652-976d-7ea7d8b3c6e2)
