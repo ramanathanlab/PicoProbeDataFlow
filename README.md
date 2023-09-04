@@ -4,6 +4,8 @@ Data flow infrastructure for Argonne National Laboratory PicoProbe.
 
 ![overview](https://github.com/ramanathanlab/PicoProbeDataFlow/assets/38300604/046dc3cd-03aa-4652-976d-7ea7d8b3c6e2)
 
+Preprint: https://arxiv.org/abs/2308.13701
+
 ## Dataset
 - The datasets used in this study can be downloaded here: https://zenodo.org/record/8284219
 - The machine learning nanoparticle prediciton dataset: https://app.roboflow.com/picoprobe/nanoparticle-detection/1
@@ -75,3 +77,15 @@ If you are interested in buidling the dataset manually, please see `examples/xlo
 
 ## Django Globus Portal Framework (DGPF) Data Portal
 We provide an interactive visualization of our experimental results using the source code at [this](https://github.com/ramanathanlab/picoprobe-portal/tree/main) repository.
+
+## Citation
+If you use our work in your research, please cite this paper:
+
+```bibtex
+@article{brace2023linking,
+  title={Linking the Dynamic PicoProbe Analytical Electron-Optical Beam Line/Microscope to Supercomputers},
+  author={Brace, Alexander and Vescovi, Rafael and Chard, Ryan and Saint, Nickolaus D and Ramanathan, Arvind and Zaluzec, Nestor J and Foster, Ian},
+  journal={arXiv preprint arXiv:2308.13701},
+  year={2023}
+}
+```
