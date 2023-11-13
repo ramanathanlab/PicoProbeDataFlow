@@ -82,10 +82,21 @@ We provide an interactive visualization of our experimental results using the so
 If you use our work in your research, please cite this paper:
 
 ```bibtex
-@article{brace2023linking,
-  title={Linking the Dynamic PicoProbe Analytical Electron-Optical Beam Line/Microscope to Supercomputers},
-  author={Brace, Alexander and Vescovi, Rafael and Chard, Ryan and Saint, Nickolaus D and Ramanathan, Arvind and Zaluzec, Nestor J and Foster, Ian},
-  journal={arXiv preprint arXiv:2308.13701},
-  year={2023}
+@inproceedings{10.1145/3624062.3624614,
+author = {Brace, Alexander and Vescovi, Rafael and Chard, Ryan and Saint, Nickolaus D. and Ramanathan, Arvind and Zaluzec, Nestor J. and Foster, Ian},
+title = {Linking the Dynamic PicoProbe Analytical Electron-Optical Beam Line / Microscope to Supercomputers},
+year = {2023},
+isbn = {9798400707858},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3624062.3624614},
+doi = {10.1145/3624062.3624614},
+abstract = {The Dynamic PicoProbe at Argonne National Laboratory is undergoing upgrades that will enable it to produce up to 100s of GB of data per day. While this data is highly important for both fundamental science and industrial applications, there is currently limited on-site infrastructure to handle these high-volume data streams. We address this problem by providing a software architecture capable of supporting large-scale data transfers to the neighboring supercomputers at the Argonne Leadership Computing Facility. To prepare for future scientific workflows, we implement two instructive use cases for hyperspectral and spatiotemporal datasets, which include: (i) off-site data transfer, (ii) machine learning/artificial intelligence and traditional data analysis approaches, and (iii) automatic metadata extraction and cataloging of experimental results. This infrastructure supports expected workloads and also provides domain scientists the ability to reinterrogate data from past experiments to yield additional scientific value and derive new insights.},
+booktitle = {Proceedings of the SC '23 Workshops of The International Conference on High Performance Computing, Network, Storage, and Analysis},
+pages = {2140–2146},
+numpages = {7},
+keywords = {data flow, AI, ML, automated science, HPC},
+location = {Denver, CO, USA},
+series = {SC-W '23}
 }
 ```
